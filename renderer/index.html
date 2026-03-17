@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TuneBird</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:        #111113;
+  --sidebar:   #18181b;
+  --surface:   #1e1e22;
+  --surface2:  #27272c;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --accent:    #fa2d55;
+  --accent-dim:rgba(250,45,85,0.18);
+  --text:      #f2f2f7;
+  --text2:     rgba(242,242,247,0.55);
+  --text3:     rgba(242,242,247,0.3);
+  --green:     #32d74b;
+  --green-dim: rgba(50,215,75,0.15);
+  --red:       #ff453a;
+  --r:         10px;
+  --font:      -apple-system,'SF Pro Display','SF Pro Text',system-ui,sans-serif;
+}
+
+html,body { height:100%; overflow:hidden; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ─────────────────────────── */
+#drag { height:28px; -webkit-app-region:drag; flex-shrink:0; }
+
+#app {
+  display:flex;
+  height: calc(100vh - 28px);
+  overflow: hidden;
+}
+
+/* ── Sidebar ────────────────────────── */
+#sidebar {
+  width: 210px;
+  min-width: 210px;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0 0;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 16px 20px;
+}
+
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-mark svg { display:block; }
+
+.logo-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+
+.sidebar-section {
+  padding: 0 8px 6px;
+}
+
+.sidebar-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  text-transform: uppercase;
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 450;
+  transition: background 0.1s, color 0.1s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.nav-item:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+
+.nav-item.active {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 12px;
+}
+
+/* Download queue in sidebar */
+#dl-queue {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 12px 8px;
+}
+
+.dl-queue-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  text-transform: uppercase;
+  padding: 0 8px;
+  margin-bottom: 8px;
+}
+
+.dl-queue-empty {
+  font-size: 12px;
+  color: var(--text3);
+  padding: 0 8px;
+  font-style: italic;
+}
+
+.dl-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  margin-bottom: 6px;
+}
+
+.dl-item-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dl-item-phase {
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.dl-bar-track {
+  height: 3px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.dl-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.dl-bar-fill.done { background: var(--green); }
+
+/* ── Main ───────────────────────────── */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Search bar */
+#search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#search-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 9px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 9px 14px 9px 36px;
+  outline: none;
+  transition: border-color 0.15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 12px center;
+}
+
+#search-input::placeholder { color: var(--text3); }
+#search-input:focus { border-color: rgba(255,255,255,0.25); }
+
+#search-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: 9px;
+  color: #fff;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+#search-btn:hover  { opacity: 0.88; }
+#search-btn:active { transform: scale(0.97); }
+
+/* Content area */
+#content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+#content::-webkit-scrollbar { width: 6px; }
+#content::-webkit-scrollbar-track { background: transparent; }
+#content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+/* Section header */
+#section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+#section-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+
+#section-count {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+/* Video grid */
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 14px;
+}
+
+/* Video card */
+.vcard {
+  background: var(--surface);
+  border-radius: var(--r);
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.vcard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+}
+
+.vcard-thumb {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: var(--surface2);
+}
+
+.vcard-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.vcard:hover .vcard-thumb img { transform: scale(1.04); }
+
+.vcard-dur {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background: rgba(0,0,0,0.82);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.2px;
+}
+
+.vcard-info {
+  padding: 10px 12px 4px;
+}
+
+.vcard-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 3px;
+}
+
+.vcard-channel {
+  font-size: 11.5px;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Download button */
+.dl-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: calc(100% - 24px);
+  margin: 8px 12px 12px;
+  padding: 7px 10px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.dl-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.11);
+  border-color: var(--border2);
+}
+
+.dl-btn:disabled { cursor: default; }
+
+/* Progress fill inside button */
+.dl-btn-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: rgba(250,45,85,0.2);
+  width: 0%;
+  transition: width 0.45s ease;
+  pointer-events: none;
+}
+
+.dl-btn.done   { color: var(--green); background: var(--green-dim); border-color: rgba(50,215,75,0.2); }
+.dl-btn.error  { color: var(--red); }
+.dl-btn.active { border-color: rgba(250,45,85,0.3); }
+
+.dl-btn-icon {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.dl-btn-text { position: relative; }
+
+/* ── Loading / Empty states ─────────── */
+#loading-state, #error-state, #empty-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  text-align: center;
+}
+
+#loading-state.show, #error-state.show, #empty-state.show {
+  display: flex;
+}
+
+.state-icon { font-size: 36px; opacity: 0.4; }
+.state-title { font-size: 16px; font-weight: 600; color: var(--text); }
+.state-sub { font-size: 13px; color: var(--text2); max-width: 320px; }
+
+/* Spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255,255,255,0.15);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Setup screen ────────────────────── */
+#setup-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 100;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  text-align: center;
+}
+
+#setup-screen.show { display: flex; }
+
+.setup-icon {
+  width: 56px; height: 56px;
+  background: var(--accent);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px;
+}
+
+.setup-title { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+.setup-sub { font-size: 14px; color: var(--text2); max-width: 440px; line-height: 1.6; }
+
+.setup-cmd {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 14px 24px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 14px;
+  color: #f0f0f0;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.setup-cmd:hover { background: rgba(255,255,255,0.09); }
+
+.setup-note { font-size: 12px; color: var(--text3); }
+
+.setup-refresh {
+  margin-top: 8px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 28px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.setup-refresh:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<!-- Setup screen (shown if yt-dlp / ffmpeg missing) -->
+<div id="setup-screen">
+  <div class="setup-icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+  </div>
+  <div class="setup-title">Almost ready</div>
+  <div class="setup-sub" id="setup-msg">
+    TuneBird needs two free tools to download and convert audio. Install them in one command — copy and paste into Terminal, then relaunch.
+  </div>
+  <div class="setup-cmd" title="Click to copy" onclick="copyCmd(this)">brew install yt-dlp ffmpeg</div>
+  <div class="setup-note" id="setup-note">Don't have Homebrew? Visit brew.sh first.</div>
+  <button class="setup-refresh" onclick="recheckDeps()">Recheck →</button>
+</div>
+
+<!-- Drag area (macOS titlebar) -->
+<div id="drag"></div>
+
+<!-- Main app -->
+<div id="app">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
+      <span class="logo-name">TuneBird</span>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Browse</div>
+      <div id="nav"></div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div id="dl-queue">
+      <div class="dl-queue-label">Downloads</div>
+      <div id="dl-list"><div class="dl-queue-empty">Nothing downloading</div></div>
+      <div id="dl-open" onclick="openFolder()" style="display:none;margin-top:8px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);transition:background 0.1s" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+        📁 Open folder
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main id="main">
+    <div id="search-row">
+      <input id="search-input" type="text" placeholder="Search YouTube…" autocomplete="off" spellcheck="false">
+      <button id="search-btn">Search</button>
+    </div>
+
+    <div id="content">
+      <div id="section-header">
+        <span id="section-title"></span>
+        <span id="section-count"></span>
+      </div>
+
+      <div id="grid"></div>
+
+      <div id="loading-state">
+        <div class="spinner"></div>
+        <div class="state-title" id="loading-msg">Searching…</div>
+      </div>
+
+      <div id="error-state">
+        <div class="state-icon">⚠️</div>
+        <div class="state-title">Something went wrong</div>
+        <div class="state-sub" id="error-msg"></div>
+      </div>
+
+      <div id="empty-state">
+        <div class="state-icon">🎵</div>
+        <div class="state-title">No results</div>
+        <div class="state-sub">Try a different search term.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Categories ──────────────────────────────────────────────────────────────
+const CATS = [
+  { id:'trending',   label:'Trending',        icon:'🔥', q:'top music charts 2025' },
+  { id:'newmusic',   label:'New Releases',     icon:'✨', q:'new music releases 2025' },
+  { id:'lofi',       label:'Lofi / Chill',     icon:'💤', q:'lofi hip hop chill beats study' },
+  { id:'hiphop',     label:'Hip-Hop',          icon:'🎤', q:'hip hop rap hits 2025' },
+  { id:'pop',        label:'Pop',              icon:'💃', q:'pop music hits 2025' },
+  { id:'rock',       label:'Rock',             icon:'🎸', q:'rock music 2025' },
+  { id:'electronic', label:'Electronic / EDM', icon:'⚡', q:'electronic dance music 2025' },
+  { id:'jazz',       label:'Jazz',             icon:'🎷', q:'jazz music best' },
+  { id:'podcasts',   label:'Podcasts',         icon:'📻', q:'popular podcast episodes 2025' },
+];
+
+// ── State ───────────────────────────────────────────────────────────────────
+const dlState = new Map();   // videoId → {percent, phase, title}
+const doneSet = new Set();   // completed downloads
+let currentCat = 'trending';
+let hasCompletions = false;
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function fmtDur(secs) {
+  if (!secs) return '';
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = Math.floor(secs % 60);
+  return h > 0
+    ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+    : `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function fmtViews(n) {
+  if (!n) return '';
+  if (n >= 1e9) return `${(n/1e9).toFixed(1)}B views`;
+  if (n >= 1e6) return `${(n/1e6).toFixed(1)}M views`;
+  if (n >= 1e3) return `${Math.round(n/1e3)}K views`;
+  return `${n} views`;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function phaseLabel(phase, pct) {
+  switch (phase) {
+    case 'downloading': return `Downloading ${Math.round(pct)}%`;
+    case 'converting':  return 'Converting to MP3…';
+    case 'artwork':     return 'Embedding artwork…';
+    case 'metadata':    return 'Writing metadata…';
+    case 'adding':      return 'Adding to Music…';
+    case 'done':        return '✓ Added to Music';
+    default:            return 'Working…';
+  }
+}
+
+// ── Build sidebar nav ────────────────────────────────────────────────────────
+function buildNav() {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = CATS.map(c => `
+    <div class="nav-item ${c.id === currentCat ? 'active' : ''}" data-cat="${c.id}" onclick="loadCat('${c.id}')">
+      <span class="nav-icon">${c.icon}</span>
+      <span>${c.label}</span>
+    </div>
+  `).join('');
+}
+
+// ── Show/hide states ──────────────────────────────────────────────────────────
+function showLoading(msg='Searching…') {
+  document.getElementById('grid').innerHTML = '';
+  document.getElementById('section-count').textContent = '';
+  document.getElementById('loading-state').classList.add('show');
+  document.getElementById('error-state').classList.remove('show');
+  document.getElementById('empty-state').classList.remove('show');
+  document.getElementById('loading-msg').textContent = msg;
+}
+
+function hideLoading() {
+  document.getElementById('loading-state').classList.remove('show');
+}
+
+function showError(msg) {
+  hideLoading();
+  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('error-state').classList.add('show');
+}
+
+// ── Render video grid ─────────────────────────────────────────────────────────
+function renderGrid(results) {
+  hideLoading();
+  const grid = document.getElementById('grid');
+
+  if (!results.length) {
+    document.getElementById('empty-state').classList.add('show');
+    return;
+  }
+
+  document.getElementById('section-count').textContent = `${results.length} results`;
+
+  grid.innerHTML = results.map(v => {
+    const dl  = dlState.get(v.id);
+    const done = doneSet.has(v.id);
+    const dur  = fmtDur(v.duration);
+
+    let btnClass = 'dl-btn';
+    let btnIcon  = '+';
+    let btnText  = 'Add to Music';
+    let fillW    = '0%';
+    let disabled = '';
+
+    if (done) {
+      btnClass += ' done';
+      btnIcon   = '✓';
+      btnText   = 'Added to Music';
+      disabled  = 'disabled';
+    } else if (dl) {
+      btnClass += ' active';
+      btnIcon   = '…';
+      btnText   = phaseLabel(dl.phase, dl.percent);
+      fillW     = `${dl.percent}%`;
+      disabled  = 'disabled';
+    }
+
+    return `
+      <div class="vcard" data-id="${v.id}">
+        <div class="vcard-thumb">
+          <img src="${esc(v.thumbnail)}" loading="lazy" alt=""
+               onerror="this.style.visibility='hidden'">
+          ${dur ? `<span class="vcard-dur">${esc(dur)}</span>` : ''}
+        </div>
+        <div class="vcard-info">
+          <div class="vcard-title" title="${esc(v.title)}">${esc(v.title)}</div>
+          <div class="vcard-channel">${esc(v.channel)}${v.views ? ` · ${fmtViews(v.views)}` : ''}</div>
+        </div>
+        <button class="${btnClass}" ${disabled}
+                onclick="handleDownload('${esc(v.id)}', '${esc(v.title).replace(/'/g,"\\'")}')">
+          <div class="dl-btn-fill" style="width:${fillW}"></div>
+          <span class="dl-btn-icon">${btnIcon}</span>
+          <span class="dl-btn-text">${btnText}</span>
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Update a single card's button ─────────────────────────────────────────────
+function updateCard(videoId, phase, percent) {
+  const card = document.querySelector(`.vcard[data-id="${videoId}"]`);
+  if (!card) return;
+  const btn  = card.querySelector('.dl-btn');
+  const fill = card.querySelector('.dl-btn-fill');
+  const icon = card.querySelector('.dl-btn-icon');
+  const text = card.querySelector('.dl-btn-text');
+  if (!btn) return;
+
+  if (phase === 'done') {
+    btn.className = 'dl-btn done';
+    btn.disabled  = true;
+    icon.textContent = '✓';
+    text.textContent = 'Added to Music';
+    fill.style.width = '0%';
+  } else {
+    btn.className = 'dl-btn active';
+    btn.disabled  = true;
+    icon.textContent = '…';
+    text.textContent = phaseLabel(phase, percent);
+    fill.style.width = `${percent}%`;
+  }
+}
+
+// ── Download queue sidebar ────────────────────────────────────────────────────
+function refreshQueue() {
+  const list  = document.getElementById('dl-list');
+  const open  = document.getElementById('dl-open');
+  const items = [...dlState.entries()];
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="dl-queue-empty">Nothing downloading</div>';
+  } else {
+    list.innerHTML = items.map(([id, d]) => `
+      <div class="dl-item" id="qi-${id}">
+        <div class="dl-item-title">${esc(d.title)}</div>
+        <div class="dl-item-phase">${phaseLabel(d.phase, d.percent)}</div>
+        <div class="dl-bar-track">
+          <div class="dl-bar-fill ${d.phase==='done'?'done':''}" style="width:${d.percent}%"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  open.style.display = hasCompletions ? 'block' : 'none';
+}
+
+// ── Progress handler ──────────────────────────────────────────────────────────
+window.api.onProgress(({ videoId, percent, phase }) => {
+  if (phase === 'done') {
+    dlState.delete(videoId);
+    doneSet.add(videoId);
+    hasCompletions = true;
+  } else {
+    const existing = dlState.get(videoId) || { title: videoId };
+    dlState.set(videoId, { ...existing, percent, phase });
+  }
+  updateCard(videoId, phase, percent);
+  refreshQueue();
+});
+
+// ── Handle download click ─────────────────────────────────────────────────────
+async function handleDownload(videoId, title) {
+  if (dlState.has(videoId) || doneSet.has(videoId)) return;
+
+  dlState.set(videoId, { title, percent: 0, phase: 'downloading' });
+  refreshQueue();
+  updateCard(videoId, 'downloading', 0);
+
+  try {
+    await window.api.download(videoId);
+  } catch (err) {
+    dlState.delete(videoId);
+    refreshQueue();
+    // Reset button
+    const card = document.querySelector(`.vcard[data-id="${videoId}"]`);
+    if (card) {
+      const btn  = card.querySelector('.dl-btn');
+      const fill = card.querySelector('.dl-btn-fill');
+      const icon = card.querySelector('.dl-btn-icon');
+      const text = card.querySelector('.dl-btn-text');
+      btn.className = 'dl-btn error';
+      btn.disabled  = false;
+      icon.textContent = '!';
+      text.textContent = 'Failed – tap to retry';
+      fill.style.width = '0%';
+    }
+    console.error('Download error:', err);
+  }
+}
+
+// ── Load category ─────────────────────────────────────────────────────────────
+async function loadCat(catId) {
+  currentCat = catId;
+  buildNav();
+
+  const cat = CATS.find(c => c.id === catId);
+  document.getElementById('section-title').textContent = cat.label;
+  showLoading(`Loading ${cat.label}…`);
+
+  try {
+    const results = await window.api.search(cat.q);
+    renderGrid(results);
+  } catch (err) {
+    showError('Could not load results. Make sure yt-dlp is installed and you have internet.');
+  }
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+async function doSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  if (!q) return;
+
+  // Deselect category nav
+  currentCat = '';
+  buildNav();
+  document.getElementById('section-title').textContent = `"${q}"`;
+  showLoading('Searching…');
+
+  try {
+    const results = await window.api.search(q);
+    renderGrid(results);
+  } catch (err) {
+    showError('Search failed. Make sure yt-dlp is installed.');
+  }
+}
+
+document.getElementById('search-btn').addEventListener('click', doSearch);
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+// ── Open folder ───────────────────────────────────────────────────────────────
+function openFolder() { window.api.openFolder(); }
+
+// ── Copy setup command ────────────────────────────────────────────────────────
+function copyCmd(el) {
+  navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+    const orig = el.textContent;
+    el.textContent = '✓ Copied!';
+    setTimeout(() => { el.textContent = orig; }, 1500);
+  });
+}
+
+// ── Dep check + recheck ───────────────────────────────────────────────────────
+async function recheckDeps() {
+  const { ytdlp, ffmpeg } = await window.api.checkDeps();
+  if (ytdlp && ffmpeg) {
+    document.getElementById('setup-screen').classList.remove('show');
+    loadCat('trending');
+  } else {
+    const missing = [!ytdlp && 'yt-dlp', !ffmpeg && 'ffmpeg'].filter(Boolean).join(' and ');
+    document.getElementById('setup-msg').textContent =
+      `Still missing: ${missing}. Make sure you ran the command above in Terminal, then click Recheck.`;
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(async () => {
+  buildNav();
+  refreshQueue();
+
+  const { ytdlp, ffmpeg } = await window.api.checkDeps();
+
+  if (!ytdlp || !ffmpeg) {
+    const missing = [!ytdlp && 'yt-dlp', !ffmpeg && 'ffmpeg'].filter(Boolean).join(' and ');
+    document.getElementById('setup-msg').textContent =
+      `TuneBird needs ${missing} to work. Install with the command below, then click Recheck.`;
+    if (!ytdlp && ffmpeg) {
+      document.getElementById('setup-note').textContent = 'Already have Homebrew? Just paste the command above.';
+    }
+    document.getElementById('setup-screen').classList.add('show');
+  } else {
+    loadCat('trending');
+  }
+})();
+</script>
+</body>
+</html>
