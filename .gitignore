@@ -1,2 +1,6 @@
 dist/
 node_modules/
+*.mp3
+*.webm
+*.webp
+*.m4a
