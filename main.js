@@ -370,11 +370,12 @@ ipcMain.handle('download-playlist', async (_, { url, title, trackCount }) => {
 
     proc.on('close', code => {
       activeDownloads.delete(url);
-      if (code !== 0 && code !== null) return reject(new Error(`Failed with code ${code}`));
       send(90, 'adding', trackCount);
+      // Don't reject on non-zero exit — yt-dlp exits with code 1 if even one track
+      // is unavailable, but the rest may have downloaded fine. Check for MP3s first.
       let mp3s = [];
       try { mp3s = fs.readdirSync(albumDir).filter(f => f.toLowerCase().endsWith('.mp3')).sort().map(f => path.join(albumDir, f)); } catch {}
-      if (!mp3s.length) return reject(new Error('No MP3s found'));
+      if (!mp3s.length) return reject(new Error(`Download failed — no tracks saved (code ${code})`));
       const scpt = path.join(os.tmpdir(), `tb_pl_${Date.now()}.scpt`);
       fs.writeFileSync(scpt, `tell application "Music"\n${mp3s.map(p => `add POSIX file ${JSON.stringify(p)}`).join('\n')}\nend tell`);
       exec(`osascript "${scpt}"`, err => {
