@@ -52,11 +52,8 @@ app.on('window-all-closed', () => {
 
 // ─── IPC: Check dependencies ─────────────────────────────────────────────────
 ipcMain.handle('check-deps', async () => {
-  const check = (name) => new Promise(resolve => {
-    exec(`"${findBinary(name)}" --version 2>&1`, (err) => resolve(!err));
-  });
-  const [ytdlp, ffmpeg] = await Promise.all([check('yt-dlp'), check('ffmpeg')]);
-  return { ytdlp, ffmpeg };
+  const check = (name) => fs.existsSync(`/opt/homebrew/bin/${name}`);
+  return { ytdlp: check('yt-dlp'), ffmpeg: check('ffmpeg') };
 });
 
 // ─── IPC: Search ─────────────────────────────────────────────────────────────
@@ -69,7 +66,9 @@ ipcMain.handle('search', async (event, query) => {
       '--dump-json',
       '--no-warnings',
       '--quiet',
-    ]);
+    ], {
+      env: { ...process.env, PATH: `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH}` }
+    });
 
     let out = '';
     proc.stdout.on('data', d => { out += d.toString(); });
@@ -120,7 +119,9 @@ ipcMain.handle('download', async (event, videoId) => {
       '--newline',
       '-o', outTemplate,
       url,
-    ]);
+    ], {
+      env: { ...process.env, PATH: `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH}` }
+    });
 
     activeDownloads.set(videoId, proc);
 
