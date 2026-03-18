@@ -138,35 +138,38 @@ ipcMain.handle('search-playlists', async (_, query) => {
       proc.on('error', () => res([]));
     });
 
-    // Fetch album metadata via its first track
+    // Fetch album metadata — fetch ALL tracks so we get the exact count
     const fetchAlbum = (id) => new Promise(res => {
-      // OLAK5uy_ IDs use playlist URL, MPREb_ use browse URL
       const url = id.startsWith('OLAK5uy_')
         ? `https://music.youtube.com/playlist?list=${id}`
         : `https://music.youtube.com/browse/${id}`;
       const proc = spawn(bin, [
         url, '--flat-playlist', '--dump-json', '--no-warnings', '--quiet',
-        '--playlist-items', '1',
       ], { env: { ...process.env, PATH: HOMEBREW_PATH } });
       let buf = '';
       proc.stdout.on('data', d => { buf += d.toString(); });
       proc.stderr.on('data', () => {});
       proc.on('close', () => {
         try {
-          const d = JSON.parse(buf.trim().split('\n')[0]);
-          const thumbs = d.thumbnails || [];
+          const lines = buf.trim().split('\n').filter(Boolean);
+          if (!lines.length) { res(null); return; }
+          const first = JSON.parse(lines[0]);
+          // Count only actual track entries (ie_key: Youtube), not metadata lines
+          const trackCount = lines.filter(l => {
+            try { const d = JSON.parse(l); return d.ie_key === 'Youtube' || (d.id && !d.id.startsWith('UC')); }
+            catch { return false; }
+          }).length || lines.length;
+          const thumbs = first.thumbnails || [];
           const thumb  = thumbs.length
             ? thumbs[thumbs.length - 1].url
-            : (d.id ? `https://i.ytimg.com/vi/${d.id}/mqdefault.jpg` : '');
-          const rawTitle = d.playlist_title || d.playlist || '(untitled)';
+            : (first.id ? `https://i.ytimg.com/vi/${first.id}/mqdefault.jpg` : '');
+          const rawTitle = first.playlist_title || first.playlist || '(untitled)';
           const title = rawTitle.replace(/^(Album|EP|Single)\s*-\s*/i, '').trim();
           res({
-            type: 'playlist', id,
-            url:        url,
-            title,
+            type: 'playlist', id, url, title,
             thumbnail:  thumb,
-            channel:    d.playlist_uploader || d.playlist_channel || '',
-            trackCount: d.n_entries || null,
+            channel:    first.playlist_uploader || first.playlist_channel || '',
+            trackCount,
           });
         } catch { res(null); }
       });
@@ -174,30 +177,55 @@ ipcMain.handle('search-playlists', async (_, query) => {
     });
 
     (async () => {
-      // Step 1: search for the query, collect Music UC channel IDs
-      const raw = await doSearch(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`);
-      const musicChannelIds = [];
-      for (const line of raw.trim().split('\n').filter(Boolean)) {
+      // Search twice in parallel: plain query + query with "album" appended
+      // The "album" search surfaces MPREb_ IDs more reliably
+      const [rawGeneral, rawAlbum] = await Promise.all([
+        doSearch(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`),
+        doSearch(`https://music.youtube.com/search?q=${encodeURIComponent(query + ' album')}`),
+      ]);
+
+      const combined = rawGeneral + '\n' + rawAlbum;
+      const mpreIds = [];
+      for (const line of combined.trim().split('\n').filter(Boolean)) {
         try {
           const d = JSON.parse(line);
           const id = d.id || '';
-          if (id.startsWith('UC') && !musicChannelIds.includes(id)) musicChannelIds.push(id);
+          if (id.startsWith('MPREb_') && !mpreIds.includes(id)) mpreIds.push(id);
         } catch {}
       }
 
-      if (!musicChannelIds.length) { resolve([]); return; }
+      // Use first MPREb_ to identify the correct artist's real channel_id
+      // then browse that channel's full releases page
+      let allIds = [];
 
-      // Step 2: resolve real channel IDs from Music channel IDs (top 2)
-      const realChannelIds = (await Promise.all(
-        musicChannelIds.slice(0, 2).map(getRealChannelId)
-      )).filter(Boolean);
+      if (mpreIds.length) {
+        // Fetch one track from the first MPREb_ album to get the artist's real channel_id
+        const realChannelId = await new Promise(res => {
+          const proc = spawn(bin, [
+            `https://music.youtube.com/browse/${mpreIds[0]}`,
+            '--flat-playlist', '--dump-json', '--no-warnings', '--quiet',
+            '--playlist-items', '1',
+          ], { env: { ...process.env, PATH: HOMEBREW_PATH } });
+          let buf = '';
+          proc.stdout.on('data', d => { buf += d.toString(); });
+          proc.stderr.on('data', () => {});
+          proc.on('close', () => {
+            try { res(JSON.parse(buf.trim().split('\n')[0]).channel_id || null); }
+            catch { res(null); }
+          });
+          proc.on('error', () => res(null));
+        });
 
-      const uniqueRealIds = [...new Set(realChannelIds)];
-      if (!uniqueRealIds.length) { resolve([]); return; }
+        if (realChannelId) {
+          const channelIds = await browseReleases(realChannelId);
+          // Merge: MPREb_ from search first (most relevant), then full discography
+          allIds = [...new Set([...mpreIds, ...channelIds])];
+        } else {
+          allIds = [...new Set(mpreIds)];
+        }
+      }
 
-      // Step 3: browse each real channel's releases page
-      const albumIdArrays = await Promise.all(uniqueRealIds.map(browseReleases));
-      const allIds = [...new Set(albumIdArrays.flat())];
+      if (!allIds.length) { resolve([]); return; }
 
       if (!allIds.length) { resolve([]); return; }
 

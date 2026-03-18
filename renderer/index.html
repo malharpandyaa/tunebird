@@ -193,11 +193,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
       <div class="logo-mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
       <span class="logo-name">TuneBird</span>
     </div>
-    <div style="padding:0 6px 6px">
-      <div class="slabel">Browse</div>
-      <div id="nav"></div>
-    </div>
-    <div class="sdivider"></div>
     <div id="dl-queue">
       <div class="qlabel">Downloads</div>
       <div id="dl-list"><div class="q-empty">Nothing downloading</div></div>
@@ -241,19 +236,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
-const CATS = [
-  { id:'trending',   label:'Trending',   icon:'🔥', q:'top music charts 2025' },
-  { id:'newmusic',   label:'New Music',  icon:'✨', q:'new music releases 2025' },
-  { id:'lofi',       label:'Lofi',       icon:'💤', q:'lofi hip hop chill beats' },
-  { id:'hiphop',     label:'Hip-Hop',    icon:'🎤', q:'hip hop rap hits 2025' },
-  { id:'pop',        label:'Pop',        icon:'💃', q:'pop music hits 2025' },
-  { id:'rock',       label:'Rock',       icon:'🎸', q:'rock music 2025' },
-  { id:'electronic', label:'Electronic', icon:'⚡', q:'electronic dance music 2025' },
-  { id:'jazz',       label:'Jazz',       icon:'🎷', q:'jazz music best' },
-  { id:'podcasts',   label:'Podcasts',   icon:'📻', q:'popular podcast 2025' },
-];
-
-let currentCat     = 'trending';
 let currentTab     = 'songs';
 let currentQuery   = '';
 let expandedPlId   = null;         // which playlist card is expanded
@@ -286,13 +268,6 @@ function phaseLabel(phase, pct) {
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
-function buildNav() {
-  document.getElementById('nav').innerHTML = CATS.map(c => `
-    <div class="nav-item ${c.id===currentCat?'active':''}" onclick="loadCat('${c.id}')">
-      <span class="nav-icon">${c.icon}</span><span>${c.label}</span>
-    </div>`).join('');
-}
-
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
@@ -302,39 +277,11 @@ function switchTab(tab) {
   document.getElementById('pane-playlists').style.display = tab==='playlists' ? 'block' : 'none';
 }
 
-// ── Category load ─────────────────────────────────────────────────────────────
-async function loadCat(catId) {
-  currentCat   = catId;
-  currentQuery = '';
-  buildNav();
-  const cat = CATS.find(c=>c.id===catId);
-
-  // Songs
-  setSongsTitle(cat.label);
-  showSongsLoading(`Loading ${cat.label}…`);
-  // Playlists
-  setPlTitle(cat.label);
-  showPlLoading(`Loading ${cat.label} albums & playlists…`);
-
-  const [songs, pls] = await Promise.allSettled([
-    window.api.searchSongs(cat.q),
-    window.api.searchPlaylists(cat.q),
-  ]);
-
-  if (songs.status==='fulfilled') renderSongs(songs.value);
-  else showSongsError('Could not load. Check internet connection.');
-
-  if (pls.status==='fulfilled') renderPlaylists(pls.value);
-  else showPlError('Could not load playlists.');
-}
-
 // ── Search ────────────────────────────────────────────────────────────────────
 async function doSearch() {
   const q = document.getElementById('search-input').value.trim();
   if (!q) return;
-  currentCat   = '';
   currentQuery = q;
-  buildNav();
 
   setSongsTitle(`"${q}"`);
   showSongsLoading('Searching…');
@@ -668,7 +615,7 @@ function copyCmd(el) {
 
 async function recheckDeps() {
   const {ytdlp,ffmpeg}=await window.api.checkDeps();
-  if(ytdlp&&ffmpeg){document.getElementById('setup').classList.remove('show');loadCat('trending');}
+  if(ytdlp&&ffmpeg){document.getElementById('setup').classList.remove('show');document.getElementById('search-input').focus();}
   else{const m=[!ytdlp&&'yt-dlp',!ffmpeg&&'ffmpeg'].filter(Boolean).join(' and ');document.getElementById('su-msg').textContent=`Still missing: ${m}. Run the command, then click Recheck.`;}
 }
 
@@ -677,13 +624,13 @@ document.getElementById('search-btn').addEventListener('click', doSearch);
 document.getElementById('search-input').addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
 
 (async()=>{
-  buildNav(); refreshQueue();
+  refreshQueue();
   const {ytdlp,ffmpeg}=await window.api.checkDeps();
   if(!ytdlp||!ffmpeg){
     const m=[!ytdlp&&'yt-dlp',!ffmpeg&&'ffmpeg'].filter(Boolean).join(' and ');
     document.getElementById('su-msg').textContent=`TuneBird needs ${m} to work. Install with the command below, then click Recheck.`;
     document.getElementById('setup').classList.add('show');
-  } else { loadCat('trending'); }
+  } else { document.getElementById('search-input').focus(); }
 })();
 </script>
 </body>
