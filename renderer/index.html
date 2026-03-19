@@ -78,7 +78,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 /* ── Song card ── */
 .vcard{background:var(--surface);border-radius:10px;overflow:hidden;transition:transform .15s,box-shadow .15s}
 .vcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.45)}
-.vcard-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--surface2)}
+.vcard-thumb{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--surface2)}
 .vcard-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
 .vcard:hover .vcard-thumb img{transform:scale(1.04)}
 .vcard-dur{position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.82);color:#fff;font-size:10.5px;font-weight:500;padding:2px 5px;border-radius:4px}
@@ -100,7 +100,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .plcard{background:var(--surface);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;border:1px solid transparent}
 .plcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.45)}
 .plcard.expanded{border-color:var(--accent);border-radius:10px 10px 0 0}
-.plcard-art-wrap{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--surface2)}
+.plcard-art-wrap{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--surface2)}
 .plcard-art-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
 .plcard:hover .plcard-art-wrap img{transform:scale(1.04)}
 .plcard-badge{position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.82);color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:.3px;text-transform:uppercase}
@@ -470,8 +470,8 @@ function renderPlPanel(panel, data, url, idx, downloadUrl) {
       </div>
       <button class="pl-all-btn" id="pl-all-btn-${idx}" ${dlActive||allDone?'disabled':''} onclick="dlAllTracks('${esc(downloadUrl)}','${esc(data.title).replace(/'/g,"\\'")}',${tc},${idx})">
         <div class="pl-all-fill" id="pl-all-fill-${idx}"></div>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span id="pl-all-lbl-${idx}">${allDone?'✓ All Added':`Download All (${tc})`}</span>
+        <span id="pl-all-lbl-${idx}">${allDone?'✓ Added to Apple Music':`Download to Apple Music`}</span>
+        <img src="Apple_Music_icon_iOS_26.svg" width="16" height="16" style="flex-shrink:0">
       </button>
     </div>
     <div class="pl-prog-row" id="pl-prog-${idx}">
@@ -540,7 +540,7 @@ async function dlAllTracks(url, title, trackCount, idx) {
     plDlActive.delete(url);
     dlState.delete(url); refreshQueue();
     if(allBtn){allBtn.disabled=false;}
-    if(allLbl) allLbl.textContent='Retry Download';
+    if(allLbl) allLbl.textContent='Retry';
     const lbl=document.getElementById(`pl-prog-lbl-${idx}`);
     if(lbl) lbl.textContent='Failed: '+err.message;
   }
@@ -576,7 +576,7 @@ window.api.onPlaylistProgress(({url,percent,phase,trackIndex}) => {
     if(fill)  fill.style.width='0%';
     if(pFill){pFill.style.width='100%';pFill.classList.add('done');}
     if(pLbl)  pLbl.textContent='✓ All tracks added to Music';
-    if(allLbl)allLbl.textContent='✓ All Added';
+    if(allLbl)allLbl.textContent='✓ Added to Apple Music';
     // mark all track buttons done
     const data = [...loadedPlData.values()].find(d=>d.tracks);
     if(data) data.tracks.forEach(t=>{setTrackBtn(t.id,'done','✓');doneSet.add(t.id);});
