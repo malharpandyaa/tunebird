@@ -21,4 +21,9 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.removeAllListeners('playlist-progress');
     ipcRenderer.on('playlist-progress', (_, d) => cb(d));
   },
+  onUpdateReady: cb => {
+    ipcRenderer.removeAllListeners('update-ready');
+    ipcRenderer.on('update-ready', () => cb());
+  },
+  installUpdate: () => ipcRenderer.invoke('install-update'),
 });

@@ -3,9 +3,35 @@ const path   = require('path');
 const { spawn, exec } = require('child_process');
 const fs     = require('fs');
 const os     = require('os');
+const { autoUpdater } = require('electron-updater');
+const { PostHog } = require('posthog-node');
 
 let mainWindow;
 let loginWindow = null;
+
+// ── Analytics ─────────────────────────────────────────────────────────────────
+const posthog = new PostHog('phc_TNjJDPmLHG5VEOsfD6x1xIKUgMP7dA2nmZnX9BCrG46', {
+  host: 'https://us.i.posthog.com',
+  flushAt: 1,
+  flushInterval: 0,
+});
+
+// Use a stable anonymous ID stored in userData
+const ANALYTICS_ID_FILE = path.join(app.getPath('userData'), 'analytics-id.txt');
+function getAnalyticsId() {
+  try {
+    if (fs.existsSync(ANALYTICS_ID_FILE)) return fs.readFileSync(ANALYTICS_ID_FILE, 'utf8').trim();
+    const id = 'user-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    fs.writeFileSync(ANALYTICS_ID_FILE, id);
+    return id;
+  } catch { return 'unknown'; }
+}
+
+function track(event, props = {}) {
+  try {
+    posthog.capture({ distinctId: getAnalyticsId(), event, properties: { ...props, app_version: app.getVersion() } });
+  } catch {}
+}
 
 const OUTPUT_DIR    = path.join(os.homedir(), 'Music', 'TuneBird');
 const HOMEBREW_PATH = `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH}`;
@@ -71,6 +97,20 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+
+  // Track app open
+  track('app_opened');
+
+  // Auto-updater — checks GitHub releases silently
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.checkForUpdatesAndNotify().catch(() => {});
+
+  autoUpdater.on('update-downloaded', () => {
+    if (mainWindow) {
+      mainWindow.webContents.send('update-ready');
+    }
+  });
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 
@@ -115,6 +155,7 @@ ipcMain.handle('login', async () => {
           // Logged in — save cookies and close
           clearInterval(checkInterval);
           const saved = await saveElectronCookies(loginSess);
+          if (saved) track('user_signed_in');
           loginWindow.close();
           resolve({ success: saved });
         }
@@ -132,11 +173,13 @@ ipcMain.handle('login', async () => {
 // ── Logout ────────────────────────────────────────────────────────────────────
 ipcMain.handle('logout', async () => {
   try { fs.unlinkSync(COOKIE_FILE); } catch {}
+  track('user_signed_out');
   return { success: true };
 });
 
 // ── Search songs ──────────────────────────────────────────────────────────────
 ipcMain.handle('search-songs', async (_, query) => {
+  track('search_performed', { type: 'songs', query });
   return new Promise((resolve, reject) => {
     const bin  = findBinary('yt-dlp');
     const proc = spawn(bin, [
@@ -167,6 +210,7 @@ ipcMain.handle('search-songs', async (_, query) => {
 
 // ── Search playlists ──────────────────────────────────────────────────────────
 ipcMain.handle('search-playlists', async (_, query) => {
+  track('search_performed', { type: 'albums', query });
   return new Promise((resolve, reject) => {
     const bin = findBinary('yt-dlp');
     const cookieArgs = getCookieArgs();
@@ -405,6 +449,7 @@ ipcMain.handle('download', async (_, videoId) => {
       exec(`osascript "${scpt}"`, err => {
         try { fs.unlinkSync(scpt); } catch {}
         send(100, 'done');
+        track('song_downloaded', { addedToMusic: !err });
         resolve({ success: true, addedToMusic: !err });
       });
     });
@@ -463,6 +508,7 @@ ipcMain.handle('download-playlist', async (_, { url, title, trackCount }) => {
       exec(`osascript "${scpt}"`, err => {
         try { fs.unlinkSync(scpt); } catch {}
         send(100, 'done', trackCount);
+        track('album_downloaded', { trackCount: mp3s.length, addedToMusic: !err, albumTitle: title });
         resolve({ success: true, trackCount: mp3s.length, addedToMusic: !err });
       });
     });
@@ -470,9 +516,13 @@ ipcMain.handle('download-playlist', async (_, { url, title, trackCount }) => {
   });
 });
 
+ipcMain.handle('install-update', () => { autoUpdater.quitAndInstall(); });
+
 ipcMain.handle('cancel-download', (_, id) => {
   const p = activeDownloads.get(id);
   if (p) { p.kill('SIGTERM'); activeDownloads.delete(id); }
 });
 
 ipcMain.handle('open-folder', () => shell.openPath(OUTPUT_DIR));
+
+app.on('before-quit', () => { try { posthog.shutdown(); } catch {} });
