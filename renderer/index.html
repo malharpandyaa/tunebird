@@ -6,171 +6,503 @@
 <title>TuneBird</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#111113;--sidebar:#18181b;--surface:#1e1e22;--surface2:#27272c;--surface3:#2f2f35;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
-  --accent:#fa2d55;--text:#f2f2f7;--text2:rgba(242,242,247,.55);--text3:rgba(242,242,247,.28);
-  --green:#32d74b;--green-dim:rgba(50,215,75,.15);--red:#ff453a;
-  --font:-apple-system,'SF Pro Display','SF Pro Text',system-ui,sans-serif;
+
+:root {
+  --bg:          #1c1c1e;
+  --sidebar-bg:  rgba(28,28,30,0.85);
+  --surface:     #2c2c2e;
+  --surface2:    #3a3a3c;
+  --surface3:    #48484a;
+  --border:      rgba(255,255,255,0.08);
+  --border2:     rgba(255,255,255,0.13);
+  --accent:      #fc3c44;
+  --accent-dim:  rgba(252,60,68,0.15);
+  --text:        #f2f2f7;
+  --text2:       #aeaeb2;
+  --text3:       #636366;
+  --green:       #32d74b;
+  --green-dim:   rgba(50,215,75,0.15);
+  --red:         #ff453a;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3);
+  --shadow-lg:   0 8px 30px rgba(0,0,0,0.5), 0 4px 10px rgba(0,0,0,0.3);
+  --font:        -apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
+  --r:           10px;
 }
-html,body{height:100%;overflow:hidden}
-body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13px;-webkit-font-smoothing:antialiased}
-#drag{height:28px;-webkit-app-region:drag;flex-shrink:0}
-#app{display:flex;height:calc(100vh - 28px);overflow:hidden}
+
+html,body { height:100%; overflow:hidden; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+#drag { height: 28px; -webkit-app-region: drag; flex-shrink: 0; }
+
+#app { display: flex; height: calc(100vh - 28px); overflow: hidden; }
 
 /* ── Sidebar ── */
-#sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:14px 0 0;overflow-y:auto}
-.sidebar-logo{display:flex;align-items:center;gap:9px;padding:0 14px 18px}
-.logo-mark{width:26px;height:26px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.logo-name{font-size:15px;font-weight:700;letter-spacing:-.3px}
-.slabel{font-size:10px;font-weight:600;letter-spacing:.07em;color:var(--text3);text-transform:uppercase;padding:0 7px;margin-bottom:3px}
-.nav-item{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:7px;cursor:pointer;color:var(--text2);font-size:12.5px;font-weight:450;transition:background .1s,color .1s;user-select:none;-webkit-user-select:none;margin:0 5px}
-.nav-item:hover{background:rgba(255,255,255,.06);color:var(--text)}
-.nav-item.active{background:rgba(255,255,255,.08);color:var(--text);font-weight:500}
-.nav-icon{font-size:11px;width:16px;text-align:center;flex-shrink:0}
-.sdivider{height:1px;background:var(--border);margin:7px 10px}
+#sidebar {
+  width: 210px;
+  min-width: 210px;
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 0.5px solid var(--border2);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0 0;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 16px 20px;
+}
+
+.logo-mark {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(252,60,68,0.35);
+}
+
+.logo-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+
+.slabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  text-transform: uppercase;
+  padding: 0 16px;
+  margin-bottom: 3px;
+}
+
+.sdivider { height: 0.5px; background: var(--border2); margin: 8px 12px; }
 
 /* Queue */
-#dl-queue{margin-top:auto;border-top:1px solid var(--border);padding:10px 6px}
-.qlabel{font-size:10px;font-weight:600;letter-spacing:.07em;color:var(--text3);text-transform:uppercase;padding:0 7px;margin-bottom:7px}
-.q-empty{font-size:12px;color:var(--text3);padding:0 7px;font-style:italic}
-.qi{display:flex;flex-direction:column;gap:4px;padding:7px 9px;border-radius:7px;background:var(--surface);margin-bottom:5px}
-.qi-title{font-size:11.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qi-phase{font-size:10.5px;color:var(--text2)}
-.qi-track{height:2.5px;background:var(--surface2);border-radius:2px;overflow:hidden}
-.qi-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s}
-.qi-fill.done{background:var(--green)}
-#dl-open{display:none;margin-top:6px;padding:5px 9px;border-radius:7px;cursor:pointer;font-size:11.5px;color:var(--text2);transition:background .1s}
-#dl-open:hover{background:rgba(255,255,255,.06)}
+#dl-queue { margin-top: auto; border-top: 0.5px solid var(--border2); padding: 12px 8px; }
+
+.qlabel {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+  color: var(--text3); text-transform: uppercase;
+  padding: 0 8px; margin-bottom: 8px;
+}
+
+.q-empty { font-size: 12px; color: var(--text3); padding: 0 8px; font-style: italic; }
+
+.qi {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 10px; border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  margin-bottom: 5px;
+}
+.qi-title { font-size: 11.5px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qi-phase { font-size: 10.5px; color: var(--text2); }
+.qi-track { height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.qi-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s; }
+.qi-fill.done { background: var(--green); }
+
+#dl-open {
+  display: none; margin-top: 6px; padding: 5px 10px;
+  border-radius: 7px; cursor: pointer; font-size: 11.5px;
+  color: var(--text2); transition: background 0.1s;
+}
+#dl-open:hover { background: rgba(255,255,255,0.06); }
 
 /* ── Main ── */
-#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
 
 /* Search row */
-#search-row{display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
-#search-input{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-family:var(--font);font-size:13px;padding:8px 13px 8px 34px;outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:11px center}
-#search-input::placeholder{color:var(--text3)}
-#search-input:focus{border-color:rgba(255,255,255,.22)}
-#search-btn{background:var(--accent);border:none;border-radius:9px;color:#fff;font-family:var(--font);font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer;flex-shrink:0;transition:opacity .15s,transform .1s}
-#search-btn:hover{opacity:.88}
-#search-btn:active{transform:scale(.97)}
+#search-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 0.5px solid var(--border2);
+  flex-shrink: 0;
+  background: rgba(28,28,30,0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#search-input {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 0.5px solid transparent;
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 8px 13px 8px 34px;
+  outline: none;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%2363636e' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 11px center;
+}
+
+#search-input::placeholder { color: var(--text3); }
+
+#search-input:focus {
+  background-color: rgba(255,255,255,0.1);
+  border-color: var(--border2);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.25);
+}
+
+#search-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: 9px;
+  color: #fff;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 1px 4px rgba(252,60,68,0.3);
+}
+#search-btn:hover  { opacity: 0.88; }
+#search-btn:active { transform: scale(0.97); }
 
 /* Tabs */
-#tabs{display:flex;gap:0;padding:0 18px;border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s;user-select:none;-webkit-user-select:none;margin-bottom:-1px}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--text);border-bottom-color:var(--accent)}
+#tabs {
+  display: flex;
+  padding: 0 18px;
+  border-bottom: 0.5px solid var(--border2);
+  flex-shrink: 0;
+  background: rgba(28,28,30,0.7);
+}
+
+.tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
 /* Content */
-#content{flex:1;overflow-y:auto;padding:18px}
-#content::-webkit-scrollbar{width:5px}
-#content::-webkit-scrollbar-track{background:transparent}
-#content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:3px}
+#content { flex: 1; overflow-y: auto; padding: 20px; }
+#content::-webkit-scrollbar { width: 6px; }
+#content::-webkit-scrollbar-track { background: transparent; }
+#content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 
 /* Section header */
-.sec-hdr{display:flex;align-items:baseline;gap:8px;margin-bottom:14px}
-.sec-title{font-size:18px;font-weight:700;letter-spacing:-.3px}
-.sec-count{font-size:12px;color:var(--text3)}
+.sec-hdr { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
+.sec-title { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--text); }
+.sec-count { font-size: 12px; color: var(--text3); }
 
 /* Grid */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
 
 /* ── Song card ── */
-.vcard{background:var(--surface);border-radius:10px;overflow:hidden;transition:transform .15s,box-shadow .15s}
-.vcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.45)}
-.vcard-thumb{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--surface2)}
-.vcard-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
-.vcard:hover .vcard-thumb img{transform:scale(1.04)}
-.vcard-dur{position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.82);color:#fff;font-size:10.5px;font-weight:500;padding:2px 5px;border-radius:4px}
-.vcard-info{padding:9px 11px 4px}
-.vcard-title{font-size:12px;font-weight:500;color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:2px}
-.vcard-ch{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* dl button */
-.dl-btn{display:flex;align-items:center;gap:5px;width:calc(100% - 22px);margin:7px 11px 11px;padding:6px 9px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font);font-size:11.5px;font-weight:500;cursor:pointer;position:relative;overflow:hidden;text-align:left;transition:background .12s,border-color .12s}
-.dl-btn:hover:not(:disabled){background:rgba(255,255,255,.11);border-color:var(--border2)}
-.dl-btn:disabled{cursor:default}
-.dl-fill{position:absolute;left:0;top:0;bottom:0;background:rgba(250,45,85,.2);width:0%;transition:width .45s;pointer-events:none}
-.dl-btn.done{color:var(--green);background:var(--green-dim);border-color:rgba(50,215,75,.22)}
-.dl-btn.err{color:var(--red)}
-.dl-btn.active{border-color:rgba(250,45,85,.3)}
-.dl-icon{font-size:13px;line-height:1;flex-shrink:0;position:relative}
-.dl-txt{position:relative}
+.vcard {
+  background: var(--surface);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.vcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.vcard-thumb { position: relative; aspect-ratio: 1/1; overflow: hidden; background: var(--surface2); }
+.vcard-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.35s ease; }
+.vcard:hover .vcard-thumb img { transform: scale(1.05); }
+.vcard-dur {
+  position: absolute; bottom: 5px; right: 5px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  color: #fff; font-size: 10.5px; font-weight: 500;
+  padding: 2px 6px; border-radius: 5px;
+}
+.vcard-info { padding: 10px 11px 4px; }
+.vcard-title {
+  font-size: 12.5px; font-weight: 600; color: var(--text);
+  line-height: 1.4; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; margin-bottom: 2px;
+}
+.vcard-ch { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Song dl button */
+.dl-btn {
+  display: flex; align-items: center; gap: 5px;
+  width: calc(100% - 22px); margin: 7px 11px 11px;
+  padding: 6px 10px;
+  background: var(--surface2);
+  border: 0.5px solid var(--border2);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font); font-size: 11.5px; font-weight: 500;
+  cursor: pointer; position: relative; overflow: hidden;
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.dl-btn:hover:not(:disabled) { background: rgba(255,255,255,0.12); box-shadow: var(--shadow-sm); }
+.dl-btn:disabled { cursor: default; }
+.dl-fill { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(252,60,68,0.12); width: 0%; transition: width 0.45s; pointer-events: none; }
+.dl-btn.done  { color: var(--green); background: var(--green-dim); border-color: rgba(52,199,89,0.25); }
+.dl-btn.err   { color: var(--red); }
+.dl-btn.active{ border-color: rgba(252,60,68,0.3); }
+.dl-icon { font-size: 13px; line-height: 1; flex-shrink: 0; position: relative; color: var(--accent); }
+.dl-txt  { position: relative; }
 
 /* ── Playlist card ── */
-.plcard{background:var(--surface);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;border:1px solid transparent}
-.plcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.45)}
-.plcard.expanded{border-color:var(--accent);border-radius:10px 10px 0 0}
-.plcard-art-wrap{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--surface2)}
-.plcard-art-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
-.plcard:hover .plcard-art-wrap img{transform:scale(1.04)}
-.plcard-badge{position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.82);color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:.3px;text-transform:uppercase}
-.plcard-info{padding:9px 11px 11px}
-.plcard-title{font-size:12px;font-weight:600;color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:2px}
-.plcard-ch{font-size:11px;color:var(--text2)}
-.plcard-chevron{float:right;margin-top:1px;transition:transform .25s;font-size:11px;color:var(--text3)}
-.plcard.expanded .plcard-chevron{transform:rotate(180deg)}
+.plcard {
+  background: var(--surface);
+  border-radius: var(--r);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1.5px solid transparent;
+}
+.plcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.plcard.expanded { border-color: var(--accent); border-radius: var(--r) var(--r) 0 0; transform: none; box-shadow: var(--shadow-md); }
+.plcard-art-wrap { position: relative; aspect-ratio: 1/1; overflow: hidden; background: var(--surface2); }
+.plcard-art-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.35s ease; }
+.plcard:hover .plcard-art-wrap img { transform: scale(1.05); }
+.plcard-badge {
+  position: absolute; bottom: 5px; right: 5px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  color: #fff; font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 4px; letter-spacing: 0.3px; text-transform: uppercase;
+}
+.plcard-info { padding: 9px 11px 11px; }
+.plcard-title {
+  font-size: 12.5px; font-weight: 600; color: var(--text);
+  line-height: 1.4; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; margin-bottom: 2px;
+}
+.plcard-ch { font-size: 11px; color: var(--text2); }
+.plcard-chevron { float: right; margin-top: 1px; transition: transform 0.25s; font-size: 11px; color: var(--text3); }
+.plcard.expanded .plcard-chevron { transform: rotate(180deg); }
 
 /* ── Expanded track panel ── */
-.pl-panel{display:none;background:var(--surface);border:1px solid var(--accent);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;grid-column:1/-1}
-.pl-panel.show{display:block}
-.pl-panel-top{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--border)}
-.pl-panel-art{width:54px;height:54px;border-radius:6px;object-fit:cover;background:var(--surface2);flex-shrink:0}
-.pl-panel-meta{flex:1;min-width:0}
-.pl-panel-title{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl-panel-sub{font-size:12px;color:var(--text2);margin-top:1px}
-/* Download all btn */
-.pl-all-btn{display:flex;align-items:center;gap:7px;padding:8px 16px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;flex-shrink:0;position:relative;overflow:hidden;transition:opacity .15s}
-.pl-all-btn:hover:not(:disabled){opacity:.88}
-.pl-all-btn:disabled{opacity:.55;cursor:default}
-.pl-all-fill{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.18);width:0%;transition:width .5s;pointer-events:none}
-/* loading tracks */
-.pl-loading{display:flex;align-items:center;gap:10px;padding:16px 14px;color:var(--text2);font-size:13px}
-/* track rows */
-.track-list{max-height:280px;overflow-y:auto}
-.track-list::-webkit-scrollbar{width:4px}
-.track-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
-.track-row{display:flex;align-items:center;gap:10px;padding:7px 14px;transition:background .1s}
-.track-row:hover{background:rgba(255,255,255,.04)}
-.tr-num{width:20px;font-size:11px;color:var(--text3);text-align:right;flex-shrink:0}
-.tr-thumb{width:34px;height:34px;border-radius:4px;object-fit:cover;background:var(--surface2);flex-shrink:0}
-.tr-info{flex:1;min-width:0}
-.tr-title{font-size:12.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tr-dur{font-size:11px;color:var(--text3);flex-shrink:0}
-/* per-track dl button */
-.tr-btn{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.05);cursor:pointer;flex-shrink:0;color:var(--text2);font-size:13px;transition:background .12s,border-color .12s;position:relative;overflow:hidden}
-.tr-btn:hover:not(:disabled){background:rgba(255,255,255,.1);border-color:var(--border2);color:var(--text)}
-.tr-btn:disabled{cursor:default}
-.tr-btn.done{background:var(--green-dim);border-color:rgba(50,215,75,.25);color:var(--green)}
-.tr-btn.active{border-color:rgba(250,45,85,.35);color:var(--accent)}
-.tr-btn.err{border-color:rgba(255,69,58,.35);color:var(--red)}
-/* pl-progress bar */
-.pl-prog-row{display:none;align-items:center;gap:8px;padding:8px 14px;background:rgba(0,0,0,.2);border-top:1px solid var(--border)}
-.pl-prog-row.show{display:flex}
-.pl-prog-track{flex:1;height:2.5px;background:var(--surface2);border-radius:2px;overflow:hidden;max-width:260px}
-.pl-prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s}
-.pl-prog-fill.done{background:var(--green)}
-.pl-prog-lbl{font-size:11.5px;color:var(--text2)}
+.pl-panel {
+  display: none;
+  background: var(--surface);
+  border: 1.5px solid var(--accent);
+  border-top: none;
+  border-radius: 0 0 var(--r) var(--r);
+  overflow: hidden;
+  grid-column: 1/-1;
+  box-shadow: var(--shadow-md);
+  animation: panelIn 0.2s ease;
+}
+@keyframes panelIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+.pl-panel.show { display: block; }
+.pl-panel-top {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-bottom: 0.5px solid var(--border);
+  background: rgba(44,44,46,0.8);
+  backdrop-filter: blur(8px);
+}
+.pl-panel-art { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; background: var(--surface2); flex-shrink: 0; box-shadow: var(--shadow-sm); }
+.pl-panel-meta { flex: 1; min-width: 0; }
+.pl-panel-title { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-panel-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* Download to Apple Music btn */
+.pl-all-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 16px;
+  background: var(--accent);
+  border: none; border-radius: 9px; color: #fff;
+  font-family: var(--font); font-size: 12.5px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+  position: relative; overflow: hidden;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(252,60,68,0.35);
+}
+.pl-all-btn:hover:not(:disabled) { opacity: 0.88; }
+.pl-all-btn:active { transform: scale(0.97); }
+.pl-all-btn:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
+.pl-all-fill { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255,255,255,0.2); width: 0%; transition: width 0.5s; pointer-events: none; }
+
+/* Loading */
+.pl-loading { display: flex; align-items: center; gap: 10px; padding: 18px 16px; color: var(--text2); font-size: 13px; }
+
+/* Track rows */
+.track-list { max-height: 300px; overflow-y: auto; }
+.track-list::-webkit-scrollbar { width: 4px; }
+.track-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+.track-row { display: flex; align-items: center; gap: 10px; padding: 7px 16px; transition: background 0.1s; }
+.track-row:hover { background: rgba(255,255,255,0.04); }
+.tr-num { width: 20px; font-size: 11px; color: var(--text3); text-align: right; flex-shrink: 0; }
+.tr-thumb { width: 36px; height: 36px; border-radius: 5px; object-fit: cover; background: var(--surface2); flex-shrink: 0; box-shadow: var(--shadow-sm); }
+.tr-info { flex: 1; min-width: 0; }
+.tr-title { font-size: 12.5px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tr-dur { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+
+/* Per-track dl button */
+.tr-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 7px;
+  border: 0.5px solid var(--border2);
+  background: rgba(255,255,255,0.06);
+  cursor: pointer; flex-shrink: 0; color: var(--text2);
+  font-size: 13px; transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.tr-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); color: var(--text); }
+.tr-btn:disabled { cursor: default; }
+.tr-btn.done  { background: var(--green-dim); border-color: rgba(52,199,89,0.3); color: var(--green); }
+.tr-btn.active{ border-color: rgba(252,60,68,0.35); color: var(--accent); }
+.tr-btn.err   { border-color: rgba(255,59,48,0.35); color: var(--red); }
+
+/* Progress row */
+.pl-prog-row { display: none; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(44,44,46,0.5); border-top: 0.5px solid var(--border); }
+.pl-prog-row.show { display: flex; }
+.pl-prog-track { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; max-width: 260px; }
+.pl-prog-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s; }
+.pl-prog-fill.done { background: var(--green); }
+.pl-prog-lbl { font-size: 11.5px; color: var(--text2); }
+
+/* ── Login screen ── */
+#login-screen {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: var(--bg);
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 0; text-align: center;
+  -webkit-app-region: drag;
+}
+#login-screen.show { display: flex; }
+
+.ls-logo {
+  width: 80px; height: 80px;
+  background: var(--accent);
+  border-radius: 22px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 32px rgba(252,60,68,0.45);
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+.ls-title {
+  font-size: 28px; font-weight: 700; letter-spacing: -0.5px;
+  color: var(--text); margin-bottom: 8px;
+}
+
+.ls-sub {
+  font-size: 14px; color: var(--text2);
+  line-height: 1.6; max-width: 320px;
+  margin-bottom: 40px;
+}
+
+.ls-google-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 28px;
+  background: #fff;
+  border: none; border-radius: 12px;
+  font-family: var(--font); font-size: 15px; font-weight: 600;
+  color: #1d1d1f;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
+  -webkit-app-region: no-drag;
+  margin-bottom: 16px;
+}
+.ls-google-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.35); }
+.ls-google-btn:active { transform: scale(0.98); }
+.ls-google-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+.ls-google-icon {
+  width: 22px; height: 22px; flex-shrink: 0;
+}
+
+.ls-note {
+  font-size: 11px; color: var(--text3);
+  max-width: 280px; line-height: 1.5;
+  margin-top: 32px;
+}
+
+/* Sidebar login — compact signed-in indicator */
+#login-section { flex-shrink: 0; }
+.login-indicator {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; margin: 0 6px;
+  border-radius: 8px; cursor: pointer;
+  transition: background 0.1s;
+}
+.login-indicator:hover { background: rgba(255,255,255,0.06); }
+.login-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.login-dot.on  { background: var(--green); }
+.login-dot.off { background: var(--text3); }
+.login-indicator-text { font-size: 11.5px; color: var(--text2); }
 
 /* ── States ── */
-.state{display:none;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;gap:10px;text-align:center}
-.state.show{display:flex}
-.state-icon{font-size:32px;opacity:.35}
-.state-title{font-size:15px;font-weight:600;color:var(--text)}
-.state-sub{font-size:12.5px;color:var(--text2);max-width:300px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,.13);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.state { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; gap: 10px; text-align: center; }
+.state.show { display: flex; }
+.state-icon { font-size: 36px; opacity: 0.25; }
+.state-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.state-sub { font-size: 12.5px; color: var(--text2); max-width: 300px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
 
 /* ── Setup screen ── */
-#setup{display:none;position:fixed;inset:0;background:var(--bg);z-index:100;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:14px;text-align:center}
-#setup.show{display:flex}
-.su-icon{width:52px;height:52px;background:var(--accent);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
-.su-title{font-size:21px;font-weight:700;letter-spacing:-.3px}
-.su-sub{font-size:13.5px;color:var(--text2);max-width:420px;line-height:1.6}
-.su-cmd{background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:13px 22px;font-family:'SF Mono','Fira Code',monospace;font-size:13.5px;cursor:pointer;transition:background .15s;user-select:text;-webkit-user-select:text}
-.su-cmd:hover{background:rgba(255,255,255,.09)}
-.su-note{font-size:11.5px;color:var(--text3)}
-.su-btn{margin-top:6px;background:var(--accent);border:none;border-radius:9px;color:white;font-family:var(--font);font-size:13.5px;font-weight:600;padding:10px 26px;cursor:pointer;transition:opacity .15s}
-.su-btn:hover{opacity:.85}
+#setup {
+  display: none; position: fixed; inset: 0;
+  background: rgba(28,28,30,0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px; gap: 14px; text-align: center;
+}
+#setup.show { display: flex; }
+.su-icon { width: 56px; height: 56px; background: var(--accent); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 4px 16px rgba(252,60,68,0.35); }
+.su-title { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+.su-sub { font-size: 14px; color: var(--text2); max-width: 420px; line-height: 1.6; }
+.su-cmd {
+  background: var(--surface);
+  border: 0.5px solid var(--border2);
+  border-radius: 10px;
+  padding: 13px 24px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 13.5px;
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s;
+  user-select: text; -webkit-user-select: text;
+}
+.su-cmd:hover { box-shadow: var(--shadow-md); }
+.su-note { font-size: 11.5px; color: var(--text3); }
+.su-btn {
+  margin-top: 6px;
+  background: var(--accent);
+  border: none; border-radius: 10px;
+  color: white; font-family: var(--font);
+  font-size: 14px; font-weight: 600;
+  padding: 10px 28px; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(252,60,68,0.35);
+  transition: opacity 0.15s;
+}
+.su-btn:hover { opacity: 0.88; }
 </style>
 </head>
 <body>
@@ -184,15 +516,49 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
   <button class="su-btn" onclick="recheckDeps()">Recheck →</button>
 </div>
 
+<!-- Login screen -->
+<div id="login-screen">
+  <div class="ls-logo">
+    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  </div>
+  <div class="ls-title">TuneBird</div>
+  <div class="ls-sub">Sign in with your Google account to search YouTube Music and download songs directly to Apple Music.</div>
+  <button class="ls-google-btn" id="ls-google-btn" onclick="doGoogleLogin()">
+    <svg class="ls-google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+    Continue with Google
+  </button>
+
+</div>
+
 <div id="drag"></div>
 <div id="app">
 
   <!-- Sidebar -->
   <aside id="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+      <div class="logo-mark">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
       <span class="logo-name">TuneBird</span>
     </div>
+
+    <div class="sdivider"></div>
+
+    <!-- Login indicator -->
+    <div id="login-section" style="padding:0 6px 8px">
+      <div class="login-indicator" onclick="showLoginScreen()">
+        <div class="login-dot off" id="login-dot"></div>
+        <span class="login-indicator-text" id="login-indicator-text">Sign in for better results</span>
+      </div>
+    </div>
+
+    <div class="sdivider"></div>
+
     <div id="dl-queue">
       <div class="qlabel">Downloads</div>
       <div id="dl-list"><div class="q-empty">Nothing downloading</div></div>
@@ -203,13 +569,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
   <!-- Main -->
   <main id="main">
     <div id="search-row">
-      <input id="search-input" type="text" placeholder="Search for songs, albums, playlists…" autocomplete="off" spellcheck="false">
+      <input id="search-input" type="text" placeholder="Search songs, albums, artists…" autocomplete="off" spellcheck="false">
       <button id="search-btn">Search</button>
     </div>
 
     <div id="tabs">
-      <div class="tab active" id="tab-songs"    onclick="switchTab('songs')">Songs</div>
-      <div class="tab"        id="tab-playlists" onclick="switchTab('playlists')">Albums & Playlists</div>
+      <div class="tab active" id="tab-songs"     onclick="switchTab('songs')">Songs</div>
+      <div class="tab"        id="tab-playlists"  onclick="switchTab('playlists')">Albums</div>
     </div>
 
     <div id="content">
@@ -235,19 +601,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 </div>
 
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-let currentTab     = 'songs';
-let currentQuery   = '';
-let expandedPlId   = null;         // which playlist card is expanded
-let loadedPlData   = new Map();    // plId → { title, thumbnail, channel, tracks }
-let plDlActive     = new Set();    // plIds currently downloading
+let currentTab   = 'songs';
+let currentQuery = '';
+let expandedPlId = null;
+let loadedPlData = new Map();
+let plDlActive   = new Set();
 let hasCompletions = false;
 
-// single-track dl state
 const dlState = new Map();
 const doneSet = new Set();
 
-// ── Utils ─────────────────────────────────────────────────────────────────────
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 function fmtDur(s) {
@@ -267,8 +630,6 @@ function phaseLabel(phase, pct) {
   }
 }
 
-// ── Nav ───────────────────────────────────────────────────────────────────────
-// ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tab-songs').classList.toggle('active', tab==='songs');
@@ -277,7 +638,6 @@ function switchTab(tab) {
   document.getElementById('pane-playlists').style.display = tab==='playlists' ? 'block' : 'none';
 }
 
-// ── Search ────────────────────────────────────────────────────────────────────
 async function doSearch() {
   const q = document.getElementById('search-input').value.trim();
   if (!q) return;
@@ -286,7 +646,7 @@ async function doSearch() {
   setSongsTitle(`"${q}"`);
   showSongsLoading('Searching…');
   setPlTitle(`"${q}"`);
-  showPlLoading('Searching playlists…');
+  showPlLoading('Searching albums…');
 
   const [songs, pls] = await Promise.allSettled([
     window.api.searchSongs(q),
@@ -297,10 +657,10 @@ async function doSearch() {
   else showSongsError('Search failed.');
 
   if (pls.status==='fulfilled') renderPlaylists(pls.value);
-  else showPlError('Playlist search failed.');
+  else showPlError('Album search failed.');
 }
 
-// ── Songs pane ────────────────────────────────────────────────────────────────
+// ── Songs ─────────────────────────────────────────────────────────────────────
 function setSongsTitle(t) { document.getElementById('songs-title').textContent=t; }
 function showSongsLoading(msg) {
   document.getElementById('songs-grid').innerHTML='';
@@ -323,7 +683,7 @@ function renderSongs(results) {
   document.getElementById('songs-count').textContent=`${results.length} results`;
   grid.innerHTML = results.map(v => {
     const dl=dlState.get(v.id), done=doneSet.has(v.id), dur=fmtDur(v.duration);
-    let cls='dl-btn',icon='+',txt='Add to Music',fw='0%',dis='';
+    let cls='dl-btn',icon='↓',txt='Add to Music',fw='0%',dis='';
     if(done){cls+=' done';icon='✓';txt='Added';dis='disabled';}
     else if(dl){cls+=' active';icon='…';txt=phaseLabel(dl.phase,dl.percent);fw=`${dl.percent}%`;dis='disabled';}
     return `
@@ -351,9 +711,9 @@ function updateSongCard(videoId, phase, pct) {
   const icon=card.querySelector('.dl-icon'), txt=card.querySelector('.dl-txt');
   if(!btn) return;
   if(phase==='done'){
-    btn.className='dl-btn done';btn.disabled=true;icon.textContent='✓';txt.textContent='Added';fill.style.width='0%';
+    btn.className='dl-btn done';btn.disabled=true;icon.innerHTML='✓';txt.textContent='Added';fill.style.width='0%';
   } else {
-    btn.className='dl-btn active';btn.disabled=true;icon.textContent='…';txt.textContent=phaseLabel(phase,pct);fill.style.width=`${pct}%`;
+    btn.className='dl-btn active';btn.disabled=true;icon.innerHTML='…';txt.textContent=phaseLabel(phase,pct);fill.style.width=`${pct}%`;
   }
 }
 
@@ -365,13 +725,12 @@ async function dlSong(videoId, title) {
   catch(err) {
     dlState.delete(videoId); refreshQueue();
     const card=document.querySelector(`.vcard[data-id="${videoId}"]`);
-    if(card){const btn=card.querySelector('.dl-btn');const fill=card.querySelector('.dl-fill');const icon=card.querySelector('.dl-icon');const txt=card.querySelector('.dl-txt');btn.className='dl-btn err';btn.disabled=false;icon.textContent='!';txt.textContent='Failed – retry';fill.style.width='0%';}
+    if(card){const btn=card.querySelector('.dl-btn');const fill=card.querySelector('.dl-fill');const icon=card.querySelector('.dl-icon');const txt=card.querySelector('.dl-txt');btn.className='dl-btn err';btn.disabled=false;icon.innerHTML='!';txt.textContent='Failed – retry';fill.style.width='0%';}
   }
 }
 
-// ── Playlists pane ────────────────────────────────────────────────────────────
+// ── Playlists ─────────────────────────────────────────────────────────────────
 function setPlTitle(t) { document.getElementById('pl-title').textContent=t; }
-
 function showPlLoading(msg) {
   document.getElementById('pl-grid').innerHTML='';
   document.getElementById('pl-count').textContent='';
@@ -399,7 +758,7 @@ function renderPlaylists(results) {
     return `
     <div class="plcard" id="plcard-${i}" onclick="togglePlaylist(${i},'${esc(pl.url||pl.id)}','${esc(pl.title).replace(/'/g,"\\'")}')">
       <div class="plcard-art-wrap">
-        <img src="${esc(pl.thumbnail)}" loading="lazy" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22320%22 height=%22180%22><rect fill=%22%2327272c%22 width=%22320%22 height=%22180%22/></svg>'">
+        <img src="${esc(pl.thumbnail)}" loading="lazy" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22><rect fill=%22%233a3a3c%22 width=%22300%22 height=%22300%22/></svg>'">
         <span class="plcard-badge">${esc(count)}</span>
       </div>
       <div class="plcard-info">
@@ -411,15 +770,12 @@ function renderPlaylists(results) {
   }).join('');
 }
 
-// ── Toggle/expand playlist ────────────────────────────────────────────────────
 async function togglePlaylist(idx, url, title) {
   const card  = document.getElementById(`plcard-${idx}`);
   const panel = document.getElementById(`pl-panel-${idx}`);
   if (!card || !panel) return;
-
   const isOpen = card.classList.contains('expanded');
 
-  // Close any other open panel
   if (expandedPlId !== null && expandedPlId !== idx) {
     const oc = document.getElementById(`plcard-${expandedPlId}`);
     const op = document.getElementById(`pl-panel-${expandedPlId}`);
@@ -435,12 +791,9 @@ async function togglePlaylist(idx, url, title) {
     return;
   }
 
-  // Expand
   card.classList.add('expanded');
   panel.classList.add('show');
   expandedPlId = idx;
-
-  // Show loading skeleton
   panel.innerHTML = `<div class="pl-loading"><div class="spinner"></div> Loading tracks…</div>`;
 
   try {
@@ -470,7 +823,7 @@ function renderPlPanel(panel, data, url, idx, downloadUrl) {
       </div>
       <button class="pl-all-btn" id="pl-all-btn-${idx}" ${dlActive||allDone?'disabled':''} onclick="dlAllTracks('${esc(downloadUrl)}','${esc(data.title).replace(/'/g,"\\'")}',${tc},${idx})">
         <div class="pl-all-fill" id="pl-all-fill-${idx}"></div>
-        <span id="pl-all-lbl-${idx}">${allDone?'✓ Added to Apple Music':`Download to Apple Music`}</span>
+        <span id="pl-all-lbl-${idx}">${allDone?'✓ Added to Apple Music':'Download to Apple Music'}</span>
         <img src="Apple_Music_icon_iOS_26.svg" width="16" height="16" style="flex-shrink:0">
       </button>
     </div>
@@ -500,7 +853,6 @@ function renderPlPanel(panel, data, url, idx, downloadUrl) {
     </div>`;
 }
 
-// ── Download single track from panel ──────────────────────────────────────────
 async function dlTrack(videoId, title) {
   if(dlState.has(videoId)||doneSet.has(videoId)) return;
   dlState.set(videoId,{title,percent:0,phase:'downloading'});
@@ -522,7 +874,6 @@ function setTrackBtn(id, cls, ico) {
   if(icEl) icEl.textContent=ico;
 }
 
-// ── Download all tracks ───────────────────────────────────────────────────────
 async function dlAllTracks(url, title, trackCount, idx) {
   if(plDlActive.has(url)) return;
   plDlActive.add(url);
@@ -546,7 +897,6 @@ async function dlAllTracks(url, title, trackCount, idx) {
   }
 }
 
-// ── Progress handlers ─────────────────────────────────────────────────────────
 window.api.onProgress(({videoId,percent,phase}) => {
   if(phase==='done'){
     dlState.delete(videoId); doneSet.add(videoId); hasCompletions=true;
@@ -561,7 +911,6 @@ window.api.onProgress(({videoId,percent,phase}) => {
 });
 
 window.api.onPlaylistProgress(({url,percent,phase,trackIndex}) => {
-  // find which panel index this url belongs to
   const idx = expandedPlId;
   const fill = document.getElementById(`pl-all-fill-${idx}`);
   const pFill = document.getElementById(`pl-prog-fill-${idx}`);
@@ -577,7 +926,6 @@ window.api.onPlaylistProgress(({url,percent,phase,trackIndex}) => {
     if(pFill){pFill.style.width='100%';pFill.classList.add('done');}
     if(pLbl)  pLbl.textContent='✓ All tracks added to Music';
     if(allLbl)allLbl.textContent='✓ Added to Apple Music';
-    // mark all track buttons done
     const data = [...loadedPlData.values()].find(d=>d.tracks);
     if(data) data.tracks.forEach(t=>{setTrackBtn(t.id,'done','✓');doneSet.add(t.id);});
   } else {
@@ -587,7 +935,6 @@ window.api.onPlaylistProgress(({url,percent,phase,trackIndex}) => {
       const tl=trackIndex?`Track ${trackIndex}/${tc} · `:'';
       pLbl.textContent=tl+phaseLabel(phase,percent);
     }
-    // mark current track in progress
     if(trackIndex && data?.tracks[trackIndex-1]) {
       const t=data.tracks[trackIndex-1];
       setTrackBtn(t.id,'active','…');
@@ -598,7 +945,6 @@ window.api.onPlaylistProgress(({url,percent,phase,trackIndex}) => {
   refreshQueue();
 });
 
-// ── Queue ─────────────────────────────────────────────────────────────────────
 function refreshQueue() {
   const list=document.getElementById('dl-list'), open=document.getElementById('dl-open');
   const items=[...dlState.entries()];
@@ -608,7 +954,6 @@ function refreshQueue() {
   open.style.display=hasCompletions?'block':'none';
 }
 
-// ── Setup ─────────────────────────────────────────────────────────────────────
 function copyCmd(el) {
   navigator.clipboard.writeText(el.textContent.trim()).then(()=>{const o=el.textContent;el.textContent='✓ Copied!';setTimeout(()=>{el.textContent=o;},1400);});
 }
@@ -619,18 +964,80 @@ async function recheckDeps() {
   else{const m=[!ytdlp&&'yt-dlp',!ffmpeg&&'ffmpeg'].filter(Boolean).join(' and ');document.getElementById('su-msg').textContent=`Still missing: ${m}. Run the command, then click Recheck.`;}
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+// ── Login ────────────────────────────────────────────────────────────────────
+function showLoginScreen() {
+  document.getElementById('login-screen').classList.add('show');
+}
+
+function hideLoginScreen() {
+  document.getElementById('login-screen').classList.remove('show');
+}
+
+async function doGoogleLogin() {
+  const btn = document.getElementById('ls-google-btn');
+  btn.disabled = true;
+  btn.querySelector('span') && (btn.lastChild.textContent = 'Opening…');
+  // Find and update the text node
+  for (const node of btn.childNodes) {
+    if (node.nodeType === 3 && node.textContent.trim()) {
+      node.textContent = ' Signing in…';
+    }
+  }
+  const { success } = await window.api.login();
+  btn.disabled = false;
+  for (const node of btn.childNodes) {
+    if (node.nodeType === 3 && node.textContent.trim()) {
+      node.textContent = ' Continue with Google';
+    }
+  }
+  if (success) {
+    hideLoginScreen();
+    updateLoginIndicator(true);
+  }
+}
+
+function updateLoginIndicator(loggedIn) {
+  const dot  = document.getElementById('login-dot');
+  const text = document.getElementById('login-indicator-text');
+  if (!dot || !text) return;
+  if (loggedIn) {
+    dot.className  = 'login-dot on';
+    text.textContent = 'Signed in · tap to sign out';
+    // Make clicking sign out
+    document.querySelector('.login-indicator').onclick = async () => {
+      if (confirm('Sign out of TuneBird?')) {
+        await window.api.logout();
+        updateLoginIndicator(false);
+        document.querySelector('.login-indicator').onclick = showLoginScreen;
+        showLoginScreen();
+      }
+    };
+  } else {
+    dot.className  = 'login-dot off';
+    text.textContent = 'Sign in for better results';
+    document.querySelector('.login-indicator').onclick = showLoginScreen;
+  }
+}
+
 document.getElementById('search-btn').addEventListener('click', doSearch);
 document.getElementById('search-input').addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
 
 (async()=>{
   refreshQueue();
-  const {ytdlp,ffmpeg}=await window.api.checkDeps();
+  const [{ytdlp,ffmpeg}, {loggedIn}] = await Promise.all([
+    window.api.checkDeps(),
+    window.api.checkLogin(),
+  ]);
+  updateLoginIndicator(loggedIn);
+  // Show login screen on first launch (not logged in) — but only after deps are OK
   if(!ytdlp||!ffmpeg){
     const m=[!ytdlp&&'yt-dlp',!ffmpeg&&'ffmpeg'].filter(Boolean).join(' and ');
     document.getElementById('su-msg').textContent=`TuneBird needs ${m} to work. Install with the command below, then click Recheck.`;
     document.getElementById('setup').classList.add('show');
-  } else { document.getElementById('search-input').focus(); }
+  } else {
+    if (!loggedIn) { showLoginScreen(); }
+    else document.getElementById('search-input').focus();
+  }
 })();
 </script>
 </body>

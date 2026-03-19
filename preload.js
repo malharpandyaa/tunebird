@@ -2,6 +2,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
   checkDeps:        ()      => ipcRenderer.invoke('check-deps'),
+  checkLogin:       ()      => ipcRenderer.invoke('check-login'),
+  login:            ()      => ipcRenderer.invoke('login'),
+  logout:           ()      => ipcRenderer.invoke('logout'),
   searchSongs:      q       => ipcRenderer.invoke('search-songs', q),
   searchPlaylists:  q       => ipcRenderer.invoke('search-playlists', q),
   fetchPlaylist:    url     => ipcRenderer.invoke('fetch-playlist', url),
