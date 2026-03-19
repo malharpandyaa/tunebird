@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TuneBird</title>
+<title>Tuneplug</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -15,8 +15,8 @@
   --surface3:    #48484a;
   --border:      rgba(255,255,255,0.08);
   --border2:     rgba(255,255,255,0.13);
-  --accent:      #fc3c44;
-  --accent-dim:  rgba(252,60,68,0.15);
+  --accent:      #ffffff;
+  --accent-dim:  rgba(255,255,255,0.15);
   --text:        #f2f2f7;
   --text2:       #aeaeb2;
   --text3:       #636366;
@@ -165,7 +165,7 @@ body {
   background: var(--accent);
   border: none;
   border-radius: 9px;
-  color: #fff;
+  color: #000;
   font-family: var(--font);
   font-size: 13px;
   font-weight: 600;
@@ -173,7 +173,7 @@ body {
   cursor: pointer;
   flex-shrink: 0;
   transition: opacity 0.15s, transform 0.1s;
-  box-shadow: 0 1px 4px rgba(252,60,68,0.3);
+  box-shadow: 0 1px 4px rgba(255,255,255,0.2);
 }
 #search-btn:hover  { opacity: 0.88; }
 #search-btn:active { transform: scale(0.97); }
@@ -249,21 +249,21 @@ body {
   display: flex; align-items: center; gap: 5px;
   width: calc(100% - 22px); margin: 7px 11px 11px;
   padding: 6px 10px;
-  background: var(--surface2);
+  background: #ffffff;
   border: 0.5px solid var(--border2);
   border-radius: 7px;
-  color: var(--text);
+  color: #000000;
   font-family: var(--font); font-size: 11.5px; font-weight: 500;
   cursor: pointer; position: relative; overflow: hidden;
   text-align: left;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
-.dl-btn:hover:not(:disabled) { background: rgba(255,255,255,0.12); box-shadow: var(--shadow-sm); }
+.dl-btn:hover:not(:disabled) { background: #f0f0f0; box-shadow: var(--shadow-sm); }
 .dl-btn:disabled { cursor: default; }
 .dl-fill { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(252,60,68,0.12); width: 0%; transition: width 0.45s; pointer-events: none; }
 .dl-btn.done  { color: var(--green); background: var(--green-dim); border-color: rgba(52,199,89,0.25); }
 .dl-btn.err   { color: var(--red); }
-.dl-btn.active{ border-color: rgba(252,60,68,0.3); }
+.dl-btn.active{ border-color: rgba(255,255,255,0.3); }
 .dl-icon { font-size: 13px; line-height: 1; flex-shrink: 0; position: relative; color: var(--accent); }
 .dl-txt  { position: relative; }
 
@@ -278,7 +278,7 @@ body {
   border: 1.5px solid transparent;
 }
 .plcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-.plcard.expanded { border-color: var(--accent); border-radius: var(--r) var(--r) 0 0; transform: none; box-shadow: var(--shadow-md); }
+.plcard.expanded { border-color: rgba(255,255,255,0.3); border-radius: var(--r) var(--r) 0 0; transform: none; box-shadow: var(--shadow-md); }
 .plcard-art-wrap { position: relative; aspect-ratio: 1/1; overflow: hidden; background: var(--surface2); }
 .plcard-art-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.35s ease; }
 .plcard:hover .plcard-art-wrap img { transform: scale(1.05); }
@@ -304,7 +304,7 @@ body {
 .pl-panel {
   display: none;
   background: var(--surface);
-  border: 1.5px solid var(--accent);
+  border: 1.5px solid rgba(255,255,255,0.3);
   border-top: none;
   border-radius: 0 0 var(--r) var(--r);
   overflow: hidden;
@@ -330,12 +330,12 @@ body {
   display: flex; align-items: center; gap: 7px;
   padding: 8px 16px;
   background: var(--accent);
-  border: none; border-radius: 9px; color: #fff;
+  border: none; border-radius: 9px; color: #000;
   font-family: var(--font); font-size: 12.5px; font-weight: 600;
   cursor: pointer; flex-shrink: 0;
   position: relative; overflow: hidden;
   transition: opacity 0.15s, transform 0.1s;
-  box-shadow: 0 2px 8px rgba(252,60,68,0.35);
+  box-shadow: 0 2px 8px rgba(255,255,255,0.2);
 }
 .pl-all-btn:hover:not(:disabled) { opacity: 0.88; }
 .pl-all-btn:active { transform: scale(0.97); }
@@ -409,7 +409,7 @@ body {
   background: var(--accent);
   border-radius: 22px;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 8px 32px rgba(252,60,68,0.45);
+  box-shadow: 0 8px 32px rgba(255,255,255,0.2);
   margin-bottom: 24px;
   flex-shrink: 0;
 }
@@ -454,20 +454,7 @@ body {
 
 /* Sidebar login — compact signed-in indicator */
 #login-section { flex-shrink: 0; }
-.login-indicator {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 10px; margin: 0 6px;
-  border-radius: 8px; cursor: pointer;
-  transition: background 0.1s;
-}
-.login-indicator:hover { background: rgba(255,255,255,0.06); }
-.login-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  flex-shrink: 0;
-}
-.login-dot.on  { background: var(--green); }
-.login-dot.off { background: var(--text3); }
-.login-indicator-text { font-size: 11.5px; color: var(--text2); }
+
 
 /* ── States ── */
 .state { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; gap: 10px; text-align: center; }
@@ -488,7 +475,7 @@ body {
   padding: 40px; gap: 14px; text-align: center;
 }
 #setup.show { display: flex; }
-.su-icon { width: 56px; height: 56px; background: var(--accent); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 4px 16px rgba(252,60,68,0.35); }
+.su-icon { width: 56px; height: 56px; background: var(--accent); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; box-shadow: 0 4px 16px rgba(255,255,255,0.2); }
 .su-title { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
 .su-sub { font-size: 14px; color: var(--text2); max-width: 420px; line-height: 1.6; }
 .su-cmd {
@@ -510,10 +497,10 @@ body {
   margin-top: 6px;
   background: var(--accent);
   border: none; border-radius: 10px;
-  color: white; font-family: var(--font);
+  color: #000; font-family: var(--font);
   font-size: 14px; font-weight: 600;
   padding: 10px 28px; cursor: pointer;
-  box-shadow: 0 2px 8px rgba(252,60,68,0.35);
+  box-shadow: 0 2px 8px rgba(255,255,255,0.2);
   transition: opacity 0.15s;
 }
 .su-btn:hover { opacity: 0.88; }
@@ -524,7 +511,7 @@ body {
 <div id="setup">
   <div class="su-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
   <div class="su-title">Almost ready</div>
-  <div class="su-sub" id="su-msg">TuneBird needs two free tools. Install them in one command, then click Recheck.</div>
+  <div class="su-sub" id="su-msg">Tuneplug needs two free tools. Install them in one command, then click Recheck.</div>
   <div class="su-cmd" onclick="copyCmd(this)">brew install yt-dlp ffmpeg</div>
   <div class="su-note">Don't have Homebrew? Visit brew.sh first.</div>
   <button class="su-btn" onclick="recheckDeps()">Recheck →</button>
@@ -532,10 +519,9 @@ body {
 
 <!-- Login screen -->
 <div id="login-screen">
-  <div class="ls-logo">
-    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  <div class="ls-logo" style="background:none;box-shadow:none">
+    <img src="tunebird-logo.svg" width="130" height="130">
   </div>
-  <div class="ls-title">TuneBird</div>
   <div class="ls-sub">Sign in with your Google account to search YouTube Music and download songs directly to Apple Music.</div>
   <button class="ls-google-btn" id="ls-google-btn" onclick="doGoogleLogin()">
     <svg class="ls-google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -550,7 +536,7 @@ body {
 </div>
 
 <div id="update-banner">
-  <span>A new version of TuneBird is ready</span>
+  <span>A new version of Tuneplug is ready</span>
   <button id="update-install-btn" onclick="window.api.installUpdate()">Restart & Update</button>
 </div>
 <div id="drag"></div>
@@ -558,20 +544,37 @@ body {
 
   <!-- Sidebar -->
   <aside id="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-mark">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    <div class="sidebar-logo" style="justify-content:center">
+      <div class="logo-mark" style="background:none;box-shadow:none;width:auto;height:auto">
+        <img src="tunebird-logo.svg" width="80" height="80">
       </div>
-      <span class="logo-name">TuneBird</span>
     </div>
 
     <div class="sdivider"></div>
 
     <!-- Login indicator -->
-    <div id="login-section" style="padding:0 6px 8px">
-      <div class="login-indicator" onclick="showLoginScreen()">
-        <div class="login-dot off" id="login-dot"></div>
-        <span class="login-indicator-text" id="login-indicator-text">Sign in for better results</span>
+    <div id="login-section" style="padding:0 8px 12px">
+      <div id="user-card" style="display:none;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.05)">
+          <div id="user-avatar" style="width:30px;height:30px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+            <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div id="user-name" style="font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div style="font-size:10.5px;color:var(--text3)">Signed in with Google</div>
+          </div>
+        </div>
+        <button id="signout-btn" onclick="doSignOut()" style="width:100%;padding:7px 10px;background:rgba(255,59,48,0.1);border:0.5px solid rgba(255,59,48,0.25);border-radius:8px;color:#ff453a;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:background .1s;text-align:center">
+          Sign Out
+        </button>
+      </div>
+      <div id="signin-prompt" style="display:none;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.04);cursor:pointer;text-align:center;font-size:12px;color:var(--text2)" onclick="showLoginScreen()">
+        Sign in with Google
       </div>
     </div>
 
@@ -1010,31 +1013,38 @@ async function doGoogleLogin() {
   }
   if (success) {
     hideLoginScreen();
-    updateLoginIndicator(true);
+    updateLoginIndicator(true, null);
   }
 }
 
-function updateLoginIndicator(loggedIn) {
-  const dot  = document.getElementById('login-dot');
-  const text = document.getElementById('login-indicator-text');
-  if (!dot || !text) return;
+function updateLoginIndicator(loggedIn, user) {
+  const userCard     = document.getElementById('user-card');
+  const signinPrompt = document.getElementById('signin-prompt');
+  const userName     = document.getElementById('user-name');
+  const userAvatar   = document.getElementById('user-avatar');
+  if (!userCard || !signinPrompt) return;
   if (loggedIn) {
-    dot.className  = 'login-dot on';
-    text.textContent = 'Signed in · tap to sign out';
-    // Make clicking sign out
-    document.querySelector('.login-indicator').onclick = async () => {
-      if (confirm('Sign out of TuneBird?')) {
-        await window.api.logout();
-        updateLoginIndicator(false);
-        document.querySelector('.login-indicator').onclick = showLoginScreen;
-        showLoginScreen();
+    userCard.style.display     = 'flex';
+    signinPrompt.style.display = 'none';
+    if (userName) userName.textContent = user?.name || 'Signed in';
+    if (userAvatar) {
+      if (user?.picture) {
+        userAvatar.innerHTML = `<img src="${user.picture}" width="30" height="30" style="border-radius:50%;object-fit:cover">`;
+      } else if (user?.name) {
+        userAvatar.innerHTML = user.name[0].toUpperCase();
       }
-    };
+    }
   } else {
-    dot.className  = 'login-dot off';
-    text.textContent = 'Sign in for better results';
-    document.querySelector('.login-indicator').onclick = showLoginScreen;
+    userCard.style.display     = 'none';
+    signinPrompt.style.display = 'block';
   }
+}
+
+async function doSignOut() {
+  if (!confirm('Sign out of Tuneplug?')) return;
+  await window.api.logout();
+  updateLoginIndicator(false);
+  showLoginScreen();
 }
 
 document.getElementById('search-btn').addEventListener('click', doSearch);
@@ -1049,11 +1059,11 @@ document.getElementById('search-input').addEventListener('keydown', e=>{ if(e.ke
     window.api.checkDeps(),
     window.api.checkLogin(),
   ]);
-  updateLoginIndicator(loggedIn);
+  updateLoginIndicator(loggedIn, null);
   // Show login screen on first launch (not logged in) — but only after deps are OK
   if(!ytdlp||!ffmpeg){
     const m=[!ytdlp&&'yt-dlp',!ffmpeg&&'ffmpeg'].filter(Boolean).join(' and ');
-    document.getElementById('su-msg').textContent=`TuneBird needs ${m} to work. Install with the command below, then click Recheck.`;
+    document.getElementById('su-msg').textContent=`Tuneplug needs ${m} to work. Install with the command below, then click Recheck.`;
     document.getElementById('setup').classList.add('show');
   } else {
     if (!loggedIn) { showLoginScreen(); }

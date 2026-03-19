@@ -1,0 +1,33 @@
+<svg width="500" height="500" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+
+<g transform="translate(340,340)">
+
+  <path d="
+    M -130,175
+    C -130,155 -125,135 -122,110
+    C -118,80  -115,50  -118,10
+    C -120,-40  -118,-100 -115,-145
+    C -112,-175 -95,-188 -70,-194
+    C -40,-200  20,-210  60,-216
+    C 90,-220  112,-212 118,-190
+    C 124,-165 120,-130 118,-95
+    C 116,-60  114,-20  116,20
+    C 118,55   120,90  122,118
+    C 124,138  128,155 130,175
+  "
+  fill="none" stroke="white" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <g transform="translate(-130, 175)">
+    <rect x="-26" y="-6" width="52" height="32" rx="10" fill="white"/>
+    <rect x="-13" y="26" width="9" height="22" rx="4.5" fill="white"/>
+    <rect x="4"   y="26" width="9" height="22" rx="4.5" fill="white"/>
+  </g>
+
+  <g transform="translate(130, 175)">
+    <rect x="-26" y="-6" width="52" height="32" rx="10" fill="white"/>
+    <rect x="-13" y="26" width="9" height="22" rx="4.5" fill="white"/>
+    <rect x="4"   y="26" width="9" height="22" rx="4.5" fill="white"/>
+  </g>
+
+</g>
+</svg>
