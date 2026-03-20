@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tuneplug</title>
 <style>
@@ -522,6 +524,7 @@ body {
   <div class="ls-logo" style="background:none;box-shadow:none">
     <img src="tunebird-logo.svg" width="130" height="130">
   </div>
+  <div style="font-family:'Geist',sans-serif;font-weight:700;font-size:36px;color:#fff;letter-spacing:-0.5px;margin-bottom:8px">tuneplug</div>
   <div class="ls-sub">Sign in with your Google account to search YouTube Music and download songs directly to Apple Music.</div>
   <button class="ls-google-btn" id="ls-google-btn" onclick="doGoogleLogin()">
     <svg class="ls-google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -544,10 +547,11 @@ body {
 
   <!-- Sidebar -->
   <aside id="sidebar">
-    <div class="sidebar-logo" style="justify-content:center">
+    <div class="sidebar-logo" style="justify-content:center;flex-direction:column;align-items:center;gap:6px;padding-bottom:4px">
       <div class="logo-mark" style="background:none;box-shadow:none;width:auto;height:auto">
         <img src="tunebird-logo.svg" width="80" height="80">
       </div>
+      <div style="font-family:'Geist',sans-serif;font-weight:700;font-size:15px;color:#fff;letter-spacing:-0.3px">tuneplug</div>
     </div>
 
     <div class="sdivider"></div>
@@ -606,6 +610,11 @@ body {
         <div class="grid" id="songs-grid"></div>
         <div class="state" id="songs-loading"><div class="spinner"></div><div class="state-title" id="songs-loading-msg">Loading…</div></div>
         <div class="state" id="songs-error"><div class="state-icon">⚠️</div><div class="state-title">Something went wrong</div><div class="state-sub" id="songs-err-msg"></div></div>
+        <div class="state show" id="dev-message" style="flex-direction:column;gap:6px">
+          <div style="font-size:13px;color:rgba(242,242,247,0.45);line-height:1.7;max-width:400px;text-align:center">
+            <span style="font-weight:600;color:rgba(242,242,247,0.6)">Message from Developer:</span> If you search for artist name and album title and the album does not pop up, try searching just the artist name and their catalog should pop up. I'm working on fixing this, thank you :)
+          </div>
+        </div>
         <div class="state" id="songs-empty"><div class="state-icon">🎵</div><div class="state-title">No results</div><div class="state-sub">Try a different search.</div></div>
       </div>
 
@@ -662,6 +671,8 @@ function switchTab(tab) {
 async function doSearch() {
   const q = document.getElementById('search-input').value.trim();
   if (!q) return;
+  const m = document.getElementById('dev-message');
+  if (m) m.style.display = 'none';
   currentQuery = q;
 
   setSongsTitle(`"${q}"`);

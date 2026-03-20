@@ -441,9 +441,8 @@ ipcMain.handle('download', async (_, videoId) => {
 
     proc.on('close', code => {
       activeDownloads.delete(videoId);
-      if (code !== 0 && code !== null) return reject(new Error(`yt-dlp exited with code ${code}`));
       const mp3 = path.join(OUTPUT_DIR, `${videoId}.mp3`);
-      if (!fs.existsSync(mp3)) return reject(new Error('MP3 not found'));
+      if (!fs.existsSync(mp3)) return reject(new Error(`MP3 not found (code ${code})`));
       send(97, 'adding');
       const scpt = path.join(os.tmpdir(), `tb_${Date.now()}.scpt`);
       fs.writeFileSync(scpt, `tell application "Music"\nadd POSIX file ${JSON.stringify(mp3)}\nend tell`);
@@ -497,7 +496,7 @@ ipcMain.handle('download-playlist', async (_, { url, title, trackCount }) => {
     proc.stdout.on('data', onData);
     proc.stderr.on('data', onData);
 
-    proc.on('close', code => {
+    proc.on('close', async code => {
       activeDownloads.delete(url);
       console.log('[DEBUG] yt-dlp exited with code:', code);
       console.log('[DEBUG] albumDir:', albumDir);
@@ -520,6 +519,50 @@ ipcMain.handle('download-playlist', async (_, { url, title, trackCount }) => {
         mp3s = [...topLevel, ...subLevel].sort();
       } catch {}
       if (!mp3s.length) return reject(new Error(`Download failed — no tracks saved (code ${code})`));
+
+      // Fix artist tags — find the most common artist across all tracks and apply it to all
+      // This prevents featured artists from creating separate artist entries in Music.app
+      const ffmpeg = findBinary('ffmpeg');
+      const fixArtistTags = () => new Promise(res => {
+        // Read artist tags from all mp3s using ffprobe
+        const ffprobe = findBinary('ffprobe');
+        let artistCounts = {};
+        let pending = mp3s.length;
+
+        mp3s.forEach(mp3 => {
+          exec(`"${ffprobe}" -v quiet -print_format json -show_tags "${mp3}"`, (err, stdout) => {
+            if (!err) {
+              try {
+                const tags = JSON.parse(stdout)?.format?.tags || {};
+                const artist = (tags.artist || tags.ARTIST || '').split(/[,&]/)[0].trim();
+                if (artist) artistCounts[artist] = (artistCounts[artist] || 0) + 1;
+              } catch {}
+            }
+            if (--pending === 0) {
+              // Find most common artist
+              const mainArtist = Object.entries(artistCounts).sort((a,b) => b[1]-a[1])[0]?.[0];
+              if (!mainArtist) { res(); return; }
+
+              // Apply main artist to all tracks using ffmpeg
+              let fixPending = mp3s.length;
+              mp3s.forEach(mp3 => {
+                const tmp = mp3 + '.tmp.mp3';
+                exec(`"${ffmpeg}" -y -i "${mp3}" -metadata artist="${mainArtist.replace(/"/g,'\\"')}" -codec copy "${tmp}"`, err => {
+                  if (!err) {
+                    try { fs.renameSync(tmp, mp3); } catch {}
+                  } else {
+                    try { fs.unlinkSync(tmp); } catch {}
+                  }
+                  if (--fixPending === 0) res();
+                });
+              });
+            }
+          });
+        });
+      });
+
+      await fixArtistTags();
+
       const scpt = path.join(os.tmpdir(), `tb_pl_${Date.now()}.scpt`);
       fs.writeFileSync(scpt, `tell application "Music"\n${mp3s.map(p => `add POSIX file ${JSON.stringify(p)}`).join('\n')}\nend tell`);
       exec(`osascript "${scpt}"`, err => {
