@@ -454,10 +454,35 @@ ipcMain.handle('download', async (_, videoId) => {
     proc.stdout.on('data', onData);
     proc.stderr.on('data', onData);
 
-    proc.on('close', code => {
+    proc.on('close', async code => {
       activeDownloads.delete(videoId);
       const mp3 = path.join(OUTPUT_DIR, `${videoId}.mp3`);
       if (!fs.existsSync(mp3)) return reject(new Error(`MP3 not found (code ${code})`));
+
+      // Fix artist tag — strip featured artists, keep only the first/main artist
+      // e.g. "Drake, Rihanna" → "Drake", "Drake feat. Lil Wayne" → "Drake"
+      await new Promise(res => {
+        const ffprobe = findBinary('ffprobe');
+        exec(`"${ffprobe}" -v quiet -print_format json -show_tags "${mp3}"`, (err, stdout) => {
+          if (err) { res(); return; }
+          try {
+            const tags = JSON.parse(stdout)?.format?.tags || {};
+            const rawArtist = tags.artist || tags.ARTIST || '';
+            if (!rawArtist) { res(); return; }
+            // Take only the part before any comma, ampersand, "feat.", "ft.", or "("
+            const mainArtist = rawArtist.split(/[,&(]|\bfeat\b|\bft\b/i)[0].trim();
+            if (mainArtist === rawArtist) { res(); return; } // nothing to fix
+            const ffmpeg = findBinary('ffmpeg');
+            const tmp = mp3 + '.tmp.mp3';
+            exec(`"${ffmpeg}" -y -i "${mp3}" -metadata artist="${mainArtist.replace(/"/g,'\\"')}" -codec copy "${tmp}"`, e => {
+              if (!e) { try { fs.renameSync(tmp, mp3); } catch {} }
+              else { try { fs.unlinkSync(tmp); } catch {} }
+              res();
+            });
+          } catch { res(); }
+        });
+      });
+
       send(97, 'adding');
       const scpt = path.join(os.tmpdir(), `tb_${Date.now()}.scpt`);
       fs.writeFileSync(scpt, `tell application "Music"\nadd POSIX file ${JSON.stringify(mp3)}\nend tell`);
