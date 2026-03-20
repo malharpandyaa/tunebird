@@ -471,6 +471,7 @@ ipcMain.handle('download-playlist', async (_, { url, title, trackCount }) => {
       '--yes-playlist', '--newline',
       '--parse-metadata', 'playlist_title:%(album)s',
       '--parse-metadata', 'playlist_index:%(track_number)s',
+      '--parse-metadata', 'uploader:%(artist)s',
       '-o', path.join(albumDir, '%(playlist_index)s - %(title)s.%(ext)s'),
       url,
     ], { env: { ...process.env, PATH: HOMEBREW_PATH } });
