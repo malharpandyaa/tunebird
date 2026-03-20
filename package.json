@@ -21,8 +21,24 @@
     "copyright": "Copyright © 2025",
     "mac": {
       "category": "public.app-category.music",
-      "target": [{ "target": "dmg", "arch": ["universal"] }],
-      "minimumSystemVersion": "12.0"
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "minimumSystemVersion": "12.0",
+      "extraResources": [
+        {
+          "from": "bin/",
+          "to": "bin/",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
     },
     "publish": {
       "provider": "github",

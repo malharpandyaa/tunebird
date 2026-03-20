@@ -96,6 +96,21 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Copy bundled binaries to userData on first launch so they work without Homebrew
+  if (app.isPackaged) {
+    const binDir = path.join(app.getPath('userData'), 'bin');
+    try {
+      fs.mkdirSync(binDir, { recursive: true });
+      ['yt-dlp', 'ffmpeg'].forEach(name => {
+        const src  = path.join(process.resourcesPath, 'bin', name);
+        const dest = path.join(binDir, name);
+        if (fs.existsSync(src)) {
+          fs.copyFileSync(src, dest);
+          fs.chmodSync(dest, 0o755);
+        }
+      });
+    } catch(e) { console.error('Binary copy failed:', e.message); }
+  }
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 
